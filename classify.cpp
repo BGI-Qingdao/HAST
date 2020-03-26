@@ -223,17 +223,18 @@ struct MultiThread {
     BarcodeCache final_data;
 };
 
-void processFasta(const std::string & file,int t_num,BarcodeCache& data){
+void processFastq(const std::string & file,int t_num,BarcodeCache& data){
     std::string head;
     std::string seq;
+    std::string tmp;
     MultiThread mt(t_num);
     std::ifstream ifs(file);
     while(!std::getline(ifs,head).eof()){
         std::getline(ifs,seq);
         mt.submit(head,seq);
+        std::getline(ifs,tmp);
+        std::getline(ifs,tmp);
     }
-    std::cerr<<"disk load done."<<std::endl;
-    logtime();
     mt.end=true;
     mt.wait();
     mt.collectBarcodes();
@@ -241,7 +242,7 @@ void processFasta(const std::string & file,int t_num,BarcodeCache& data){
 }
 
 void printUsage(){
-    std::cerr<<"Uasge :\n\tclassify --hap0 hap0 --hap1 hap1 --read1 read1.fq [--read2 read2.fq] [--thread t_num]"<<std::endl;
+    std::cerr<<"Uasge :\n\tclassify --hap0 hap0 --hap1 hap1 --read read1.fq [--read read2.fq] [--thread t_num]"<<std::endl;
     std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) read_count_hap0 read_count_hap1 read_count_hap-1"<<std::endl;
 }
 //
@@ -252,14 +253,14 @@ int main(int argc ,char ** argv ){
     static struct option long_options[] = {
         {"hap0",  required_argument, NULL, 'p'},
         {"hap1",  required_argument, NULL, 'm'},
-        {"read1", required_argument, NULL, 'l'},
-        {"read2", required_argument, NULL, 'r'},
+        {"read", required_argument,  NULL, 'r'},
         {"thread",required_argument, NULL, 't'},
         {"help",  no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
     static char optstring[] = "p:m:l:r:t:h";
-    std::string hap0 , hap1 , read1, read2;
+    std::string hap0 , hap1 ;
+    std::vector<std::string> read;
     int t_num=1;
     while(1){
         int c = getopt_long(argc, argv, optstring, long_options, NULL);
@@ -271,11 +272,8 @@ int main(int argc ,char ** argv ){
             case 'm':
                 hap1 = std::string(optarg);
                 break;
-            case 'l':
-                read1 = std::string(optarg);
-                break;
             case 'r':
-                read2 = std::string(optarg);
+                read.push_back(std::string(optarg));
                 break;
             case 't':
                 t_num = atoi(optarg);
@@ -286,7 +284,7 @@ int main(int argc ,char ** argv ){
                 return -1;
         }
     }
-    if( hap0 == "" || hap1 == "" || read1 == "" || t_num< 1) {
+    if( hap0 == "" || hap1 == "" || read.empty()|| t_num< 1) {
         printUsage();
         return -1;
     }
@@ -301,17 +299,12 @@ int main(int argc ,char ** argv ){
     std::cerr<<"__load hap1 kmers__"<<std::endl;
     load_kmers(hap1,1);
     logtime();
-    std::cerr<<"__process read1__"<<std::endl;
     BarcodeCache data;
-    processFasta(read1,t_num,data);
-    logtime();
-    std::cerr<<"__process read1 done__"<<std::endl;
-    
-    if( read2 != "" ){
-        std::cerr<<"__process read2__"<<std::endl;
-        processFasta(read2,t_num,data);
+    for(const auto r : read ){
+        std::cerr<<"__process read: "<<r<<std::endl;
+        processFastq(r,t_num,data);
         logtime();
-        std::cerr<<"__process read2 done__"<<std::endl;
+        std::cerr<<"__process read done__"<<std::endl;
     }
     std::cerr<<"__print result__"<<std::endl;
     printBarcodeInfos(data);

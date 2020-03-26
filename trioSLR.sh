@@ -125,7 +125,6 @@ if [[ $MEMORY -lt 1  || $CPU -lt 1 || \
     echo "ERROR : arguments invalid ... exit!!! "
     exit 1
 fi
-
 ###############################################################################
 # extract paternal.unique.filter.mer & maternal.unique.filter.mer
 ###############################################################################
@@ -159,5 +158,23 @@ $JELLYFISH dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' 
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
+for x in $FILIAL
+do 
+    READ="$READ"" --read ""$x"
+done
+./classify --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
+    --thread $CPU $READ >phasing.barcode 2>phasing.log
 
-./classify --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer --
+awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
+awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes
+awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes
+###############################################################################
+# phase filial barcode based on unique and filter mers of paternal and maternal
+###############################################################################
+for x in $FILIAL
+do
+    name=`basename $x`
+    awk  -F '#|/' -f filter_fq_by_barcodes.awk  maternal.unique.barcodes $x >"maternal."$name
+    awk  -F '#|/' -f filter_fq_by_barcodes.awk  paternal.unique.barcodes $x >"paternal."$name
+    awk  -F '#|/' -f filter_fq_by_barcodes.awk  homozygous.unique.barcodes $x >"homozygous."$name
+done
