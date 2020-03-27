@@ -168,7 +168,7 @@ do
     READ="$READ"" --read ""$x"
 done
 ./classify --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
-    --thread $CPU $READ >phasing.barcode 2>phasing.log
+    --thread $CPU $READ >phased.barcode 2>phased.log
 
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
 awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes
