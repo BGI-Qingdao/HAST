@@ -50,7 +50,7 @@ UPPER=33
 PATERNAL=""
 MATERNAL=""
 FILIAL=""
-
+SPATH=`dirname $0`
 ###############################################################################
 # parse arguments
 ###############################################################################
@@ -123,6 +123,9 @@ echo "    thread         : $CPU "
 echo "    mer            : $MER "
 echo "    lower          : $LOWER"
 echo "    upper          : $UPPER"
+echo "trioSLR.sh in dir  : $SPATH"
+CLASSIFY=$SPATH"/classify"
+FILTER_FQ_BY_BARCODES_AWK=$SPATH"/filter_fq_by_barcodes.awk"
 # sanity check
 if [[ $MEMORY -lt 1  || $CPU -lt 1 || \
     -z $PATERNAL || -z $MATERNAL || -z $FILIAL || \
@@ -131,6 +134,21 @@ if [[ $MEMORY -lt 1  || $CPU -lt 1 || \
     echo "ERROR : arguments invalid ... exit!!! "
     exit 1
 fi
+if [[ ! -e $CLASSIFY ]] ; then 
+    echo "ERROR : please run \"make\" command in $SPATH before using this script! exit..."
+    exit 1
+fi
+if [[ ! -e $FILTER_FQ_BY_BARCODES_AWK ]] ; then
+    echo "ERROR : \"$FILTER_FQ_BY_BARCODES_AWK\"  is missing. please download it from github. exit..."
+    exit 1
+fi
+for x in $MATERNAL $PATERNAL $FILIAL
+do
+   if [[ ! -e $x ]] ; then 
+       echo "ERROR : input file \"$x\" is not exist ! exit ..."
+       exit 1
+   fi
+done
 date
 echo "__START__"
 ###############################################################################
@@ -180,7 +198,7 @@ for x in $FILIAL
 do 
     READ="$READ"" --read ""$x"
 done
-./classify --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
+$CLASSIFY --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
     --thread $CPU $READ >phased.barcode 2>phased.log
 
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
@@ -195,9 +213,9 @@ echo "phase reads ..."
 for x in $FILIAL
 do
     name=`basename $x`
-    awk  -F '#|/' -f filter_fq_by_barcodes.awk  maternal.unique.barcodes $x >"maternal."$name
-    awk  -F '#|/' -f filter_fq_by_barcodes.awk  paternal.unique.barcodes $x >"paternal."$name
-    awk  -F '#|/' -f filter_fq_by_barcodes.awk  homozygous.unique.barcodes $x >"homozygous."$name
+    awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name
+    awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name
+    awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name
 done
 echo "phase reads done"
 date
