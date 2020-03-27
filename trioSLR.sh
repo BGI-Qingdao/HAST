@@ -60,6 +60,7 @@ if [[ $# == 0 ]] ; then
     usage
     exit 0
 fi
+echo "CMD :$0 $*"
 while [[ $# > 0 ]] 
 do
     case $1 in
