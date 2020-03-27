@@ -105,6 +105,10 @@ do
             FILIAL=$2" "$FILIAL
             shift 
             ;;
+        *)
+            echo "invalid params : \"$1\" . exit ... "
+            exit
+        ;;
     esac
     shift
 done
