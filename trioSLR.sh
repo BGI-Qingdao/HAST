@@ -103,6 +103,8 @@ do
             ;;
         "--filial")
             FILIAL=$2" "$FILIAL
+            shift 
+            ;;
     esac
     shift
 done
