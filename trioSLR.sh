@@ -140,6 +140,8 @@ $JELLY dump -L $LOWER -U $UPPER paternal_mer_counts.jf -o paternal.mer.filter.fa
 # dump all mers
 $JELLY dump maternal_mer_counts.jf            -o maternal.mer.fa
 $JELLY dump paternal_mer_counts.jf            -o paternal.mer.fa
+# rm temporary files
+rm maternal_mer_counts.jf paternal_mer_counts.jf
 # mix 1 copy of paternal mers and 2 copy of maternal mers
 cat maternal.mer.fa maternal.mer.fa paternal.mer.fa >mixed.fa
 # count p/maternal mixed mers
@@ -148,6 +150,8 @@ $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o mixed_mer_counts.js mixed.fa
 $JELLY dump -U 1 mixed_mer_counts.js          >paternal.mer.unique.fa
 # count==2 refer to maternal unique mers
 $JELLY dump -L 2 -U 2 mixed_mer_counts.js     >maternal.mer.unique.fa
+# rm temporary files
+rm mixed.fa mixed_mer_counts.js
 # mix unique mers and filter mers
 cat paternal.mer.unique.fa paternal.mer.filter.fa > paternal_mixed.mer.fa
 cat maternal.mer.unique.fa maternal.mer.filter.fa > maternal_mixed.mer.fa
@@ -157,6 +161,9 @@ $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o maternal_mixed_mer_counts.js ma
 # extrat both unique and filter mers
 $JELLY dump -t -c -L 2 -U 2 paternal_mixed_mer_counts.js | awk '{print $1}' >paternal.unique.filter.mer
 $JELLY dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' >maternal.unique.filter.mer
+# rm temporary files
+rm paternal_mixed.mer.fa paternal_mixed_mer_counts.js
+rm maternal_mixed.mer.fa maternal_mixed_mer_counts.js
 echo "extract unique mers done..."
 date
 ###############################################################################
