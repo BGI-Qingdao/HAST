@@ -125,39 +125,44 @@ if [[ $MEMORY -lt 1  || $CPU -lt 1 || \
     echo "ERROR : arguments invalid ... exit!!! "
     exit 1
 fi
+date
+echo "__START__"
 ###############################################################################
 # extract paternal.unique.filter.mer & maternal.unique.filter.mer
 ###############################################################################
 # count NGS reads
-$JELLYFISH count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $MATERNAL
-$JELLYFISH count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL
+echo "extract unique mers by jellyfish ..."
+$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $MATERNAL
+$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL
 # dump filter mers
-$JELLYFISH dump -L $LOWER -U $UPPER maternal_mer_counts.jf -o maternal.mer.filter.fa
-$JELLYFISH dump -L $LOWER -U $UPPER paternal_mer_counts.jf -o paternal.mer.filter.fa
+$JELLY dump -L $LOWER -U $UPPER maternal_mer_counts.jf -o maternal.mer.filter.fa
+$JELLY dump -L $LOWER -U $UPPER paternal_mer_counts.jf -o paternal.mer.filter.fa
 # dump all mers
-$JELLYFISH dump maternal_mer_counts.jf            -o maternal.mer.fa
-$JELLYFISH dump paternal_mer_counts.jf            -o paternal.mer.fa
+$JELLY dump maternal_mer_counts.jf            -o maternal.mer.fa
+$JELLY dump paternal_mer_counts.jf            -o paternal.mer.fa
 # mix 1 copy of paternal mers and 2 copy of maternal mers
 cat maternal.mer.fa maternal.mer.fa paternal.mer.fa >mixed.fa
 # count p/maternal mixed mers
-$JELLYFISH count -m $MER -s $MEMORY"G" -t $CPU -C -o mixed_mer_counts.js mixed.fa
+$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o mixed_mer_counts.js mixed.fa
 # count==1 refer to paternal unique mers
-$JELLYFISH dump -U 1 mixed_mer_counts.js          >paternal.mer.unique.fa
+$JELLY dump -U 1 mixed_mer_counts.js          >paternal.mer.unique.fa
 # count==2 refer to maternal unique mers
-$JELLYFISH dump -L 2 -U 2 mixed_mer_counts.js     >maternal.mer.unique.fa
+$JELLY dump -L 2 -U 2 mixed_mer_counts.js     >maternal.mer.unique.fa
 # mix unique mers and filter mers
 cat paternal.mer.unique.fa paternal.mer.filter.fa > paternal_mixed.mer.fa
 cat maternal.mer.unique.fa maternal.mer.filter.fa > maternal_mixed.mer.fa
 # count unique and filer mers
-$JELLYFISH count -m $MER -s $MEMORY"G" -t $CPU -C -o paternal_mixed_mer_counts.js paternal_mixed.mer.fa
-$JELLYFISH count -m $MER -s $MEMORY"G" -t $CPU -C -o maternal_mixed_mer_counts.js maternal_mixed.mer.fa
+$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o paternal_mixed_mer_counts.js paternal_mixed.mer.fa
+$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o maternal_mixed_mer_counts.js maternal_mixed.mer.fa
 # extrat both unique and filter mers
-$JELLYFISH dump -t -c -L 2 -U 2 paternal_mixed_mer_counts.js | awk '{print $1}' >paternal.unique.filter.mer
-$JELLYFISH dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' >maternal.unique.filter.mer
-
+$JELLY dump -t -c -L 2 -U 2 paternal_mixed_mer_counts.js | awk '{print $1}' >paternal.unique.filter.mer
+$JELLY dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' >maternal.unique.filter.mer
+echo "extract unique mers done..."
+date
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
+echo "extract unique barcode by classify ..."
 for x in $FILIAL
 do 
     READ="$READ"" --read ""$x"
@@ -168,9 +173,12 @@ done
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
 awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes
 awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes
+echo "extract unique barcode done"
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
+date
+echo "phase reads ..."
 for x in $FILIAL
 do
     name=`basename $x`
@@ -178,3 +186,6 @@ do
     awk  -F '#|/' -f filter_fq_by_barcodes.awk  paternal.unique.barcodes $x >"paternal."$name
     awk  -F '#|/' -f filter_fq_by_barcodes.awk  homozygous.unique.barcodes $x >"homozygous."$name
 done
+echo "phase reads done"
+date
+echo "__END__"
