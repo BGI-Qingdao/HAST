@@ -13,9 +13,11 @@ function usage(){
     echo "        --paternal    paternal NGS reads file in fastq format."
     echo "        --maternal    maternal NGS reads file in fastq format."
     echo "        --filial      filial stLFR reads file in fastq format."
+    echo "                      file in gzip format is accepted, but filename must end by .gz"
     echo "        --thread      threads num."
     echo "                      [ optioal , default 8 thread ]"
-    echo "        --memory      x (GB) of memory to be used by jellyfish."
+    echo "        --memory      x (GB) of memory to initial hash table by jellyfish."
+    echo "                      (noted: real memory used maybe greater than this )"
     echo "                      [ optioal , default 20GB ]"
     echo "        --jellyfish   jellyfish path."
     echo "                      [ optioal , default jellyfish ]"
@@ -213,9 +215,15 @@ echo "phase reads ..."
 for x in $FILIAL
 do
     name=`basename $x`
-    awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name
-    awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name
-    awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name
+    if [[ ${name: -3} == ".gz" ]] ; then 
+        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name
+        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name
+        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes $x >"homozygous."$name
+    else 
+        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name
+        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name
+        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name
+    fi
 done
 echo "phase reads done"
 date

@@ -10,6 +10,7 @@
 #include <vector>
 #include <chrono>
 #include <getopt.h>
+#include "gzstream/gzstream.h"
 
 void logtime(){
     time_t now = time(0);
@@ -106,7 +107,7 @@ void InitMap(){
 }
 std::string reverse_complement(const std::string & kmer){
     std::string ret = kmer;
-    for(int i = 0 ; i< kmer.size(); i++)
+    for(int i = 0 ; i< (int)kmer.size(); i++)
         ret[kmer.size()-i-1] = g_oppo[kmer[i]];
     return ret ;
 }
@@ -129,7 +130,7 @@ std::string get_cannonical(const std::string & kmer){
 //                barcode str :  203_1533_1069
 std::string parseName(const std::string & head){
     int s=-1, e=-1;
-    for( int i = 0 ; i< head.size(); i++ ){
+    for( int i = 0 ; i< (int)head.size(); i++ ){
         if( head[i] == '#' ) s=i;
         if( head[i] == '/' ) e=i;
     }
@@ -182,7 +183,7 @@ struct MultiThread {
     void process_reads(const std::string & head ,
                          const std::string & seq , int index) {
         int vote[2] ; vote[0]=0;vote[1]=0;
-        for(int i = 0 ; i <seq.size()-g_K+1;i++){
+        for(int i = 0 ; i <(int)seq.size()-g_K+1;i++){
             std::string kmer = get_cannonical(seq.substr(i,g_K));
             if( g_kmers[0].find(kmer) != g_kmers[0].end() )
                 vote[0] ++ ;
@@ -228,12 +229,23 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
     std::string seq;
     std::string tmp;
     MultiThread mt(t_num);
-    std::ifstream ifs(file);
-    while(!std::getline(ifs,head).eof()){
-        std::getline(ifs,seq);
+    std::istream *in ;
+    bool gz_file = false;
+    if( file.size() > 3 ) {
+        int end=file.size() ;
+        if( file[end-3] == '.' && file[end-2] == 'g' && file[end-1]=='z' ) {
+            gz_file = true ;
+        }
+    }
+    if ( gz_file )
+        in = new igzstream(file.c_str());
+    else 
+        in = new std::ifstream(file);
+    while(!std::getline(*in,head).eof()){
+        std::getline(*in,seq);
         mt.submit(head,seq);
-        std::getline(ifs,tmp);
-        std::getline(ifs,tmp);
+        std::getline(*in,tmp);
+        std::getline(*in,tmp);
     }
     mt.end=true;
     mt.wait();
@@ -244,6 +256,7 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
 void printUsage(){
     std::cerr<<"Uasge :\n\tclassify --hap0 hap0 --hap1 hap1 --read read1.fq [--read read2.fq] [--thread t_num]"<<std::endl;
     std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) read_count_hap0 read_count_hap1 read_count_hap-1"<<std::endl;
+    std::cerr<<"notice : --read accept file in gzip format , but file must end by \".gz\""<<std::endl;
 }
 //
 // Main function
