@@ -11,7 +11,6 @@
 #include <chrono>
 #include <getopt.h>
 #include "gzstream/gzstream.h"
-
 void logtime(){
     time_t now = time(0);
     char* dt = ctime(&now);
@@ -185,10 +184,14 @@ struct MultiThread {
         int vote[2] ; vote[0]=0;vote[1]=0;
         for(int i = 0 ; i <(int)seq.size()-g_K+1;i++){
             std::string kmer = get_cannonical(seq.substr(i,g_K));
-            if( g_kmers[0].find(kmer) != g_kmers[0].end() )
+            if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
                 vote[0] ++ ;
-            if( g_kmers[1].find(kmer) != g_kmers[1].end() )
+                //std::cerr<<"hap0 : "<<kmer<<std::endl;
+            }
+            if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
                 vote[1] ++ ;
+                //std::cerr<<"hap1 : "<<kmer<<std::endl;
+            }
         }
         std::string barcode = parseName(head);
         if( vote[0] > 0 && vote[0] > vote[1] )
@@ -258,6 +261,32 @@ void printUsage(){
     std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) read_count_hap0 read_count_hap1 read_count_hap-1"<<std::endl;
     std::cerr<<"notice : --read accept file in gzip format , but file must end by \".gz\""<<std::endl;
 }
+void InitAdaptor(){
+    std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGATCACCAAGGATCGCCATAGTCCATGCTAAAGGACGTCAGGAAGGGCGATCTCAGG");
+    std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGGCGACGGCCACGAAGCTAACAGCCAATCTGCGTAACAGCCAAACCTGAGATCGCCC");
+    for(int i = 0 ; i <(int)r1.size()-g_K+1;i++){
+        std::string kmer = get_cannonical(r1.substr(i,g_K));
+        if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
+            g_kmers[0].erase(kmer);
+            std::cerr<<" INFO : erase adaptor kmer from hap 0 ; kmer="<<kmer<<std::endl;
+        }
+        if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
+            g_kmers[1].erase(kmer);
+            std::cerr<<" INFO : erase adaptor kmer from hap 1 ; kmer="<<kmer<<std::endl;
+        }
+    }
+    for(int i = 0 ; i <(int)r2.size()-g_K+1;i++){
+        std::string kmer = get_cannonical(r2.substr(i,g_K));
+        if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
+            g_kmers[0].erase(kmer);
+            std::cerr<<" INFO : erase adaptor kmer from hap 0 ; kmer="<<kmer<<std::endl;
+        }
+        if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
+            g_kmers[1].erase(kmer);
+            std::cerr<<" INFO : erase adaptor kmer from hap 1 ; kmer="<<kmer<<std::endl;
+        }
+    }
+}
 //
 // Main function
 //
@@ -311,6 +340,7 @@ int main(int argc ,char ** argv ){
     load_kmers(hap0,0);
     std::cerr<<"__load hap1 kmers__"<<std::endl;
     load_kmers(hap1,1);
+    InitAdaptor();
     logtime();
     BarcodeCache data;
     for(const auto r : read ){
