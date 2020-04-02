@@ -21,9 +21,11 @@ Options  :
         --paternal    paternal NGS reads file in fastq format.
         --maternal    maternal NGS reads file in fastq format.
         --filial      filial stLFR reads file in fastq format.
+                      file in gzip format is accepted, but filename must end by .gz
         --thread      threads num.
                       [ optioal , default 8 thread ]
-        --memory      x (GB) of memory to be used by jellyfish.
+        --memory      x (GB) of memory to initial hash table by jellyfish.
+                      (noted: real memory used maybe greater than this )
                       [ optioal , default 20GB ]
         --jellyfish   jellyfish path.
                       [ optioal , default jellyfish ]
@@ -44,7 +46,6 @@ Examples :
                      --filial son.r1.fastq --memory 20 --thread 20 \
                      --mer 21 --lower=9 --upper=33 \
                      --jellyfish /home/software/jellyfish/jellyfish-linux
-
 ```
 
 Enjoy !
