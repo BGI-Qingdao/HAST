@@ -21,20 +21,27 @@ Options  :
         --paternal    paternal NGS reads file in fastq format.
         --maternal    maternal NGS reads file in fastq format.
         --filial      filial stLFR reads file in fastq format.
-                      file in gzip format is accepted, but filename must end by .gz
+                      file in gzip format is accepted, but filename must end by ".gz".
         --thread      threads num.
-                      [ optioal , default 8 thread ]
+                      [ optional, default 8 thread. ]
         --memory      x (GB) of memory to initial hash table by jellyfish.
-                      (noted: real memory used maybe greater than this )
-                      [ optioal , default 20GB ]
+                      ( note: real memory used maybe greater than this. )
+                      [ optional, default 20GB. ]
         --jellyfish   jellyfish path.
-                      [ optioal , default jellyfish ]
+                      [ optional, default jellyfish. ]
         --mer         mer-size
-                      [ optioal , default 21 ]
-        --lower       ignore mer with cout < lower.
-                      [ optioal , default 9 ]
-        --upper       ignore mer with cout > upper.
-                      [ optioal , default 33 ]
+                      [ optional, default 21. ]
+        --m-lower     maternal kmer count tablle will ignore mer with count < m-lower.
+                      [ optional, default 9. ]
+        --m-upper     maternal kmer count tablle will ignore mer with count > m-upper.
+                      [ optional, default 33. ]
+        --p-lower     paternal kmer count tablle will ignore mer with count < p-lower.
+                      [ optional, default 9. ]
+        --p-upper     paternal kmer count tablle will ignore mer with count > p-upper.
+                      [ optional, default 33. ]
+        --auto_bounds calcuate lower and upper bounds by kmercount table.
+                      [ optional, default not trigger; no parameter. ]
+                      ( note : if auto_bounds is open, it will overwrite --*-lower and --*-upper  ]
         --help        print this usage message.
 
 Examples :
@@ -44,7 +51,7 @@ Examples :
 
     ./trioSLR.sh --paternal father.fastq --maternal mater.fastq \
                      --filial son.r1.fastq --memory 20 --thread 20 \
-                     --mer 21 --lower=9 --upper=33 \
+                     --mer 21 --p-lower=9 --p-upper=33 --m-lower=9 --p-upper=33 \
                      --jellyfish /home/software/jellyfish/jellyfish-linux
 ```
 
