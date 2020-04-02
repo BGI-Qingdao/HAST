@@ -13,20 +13,27 @@ function usage(){
     echo "        --paternal    paternal NGS reads file in fastq format."
     echo "        --maternal    maternal NGS reads file in fastq format."
     echo "        --filial      filial stLFR reads file in fastq format."
-    echo "                      file in gzip format is accepted, but filename must end by .gz"
+    echo "                      file in gzip format is accepted, but filename must end by \".gz\"."
     echo "        --thread      threads num."
-    echo "                      [ optioal , default 8 thread ]"
+    echo "                      [ optional, default 8 thread. ]"
     echo "        --memory      x (GB) of memory to initial hash table by jellyfish."
-    echo "                      (noted: real memory used maybe greater than this )"
-    echo "                      [ optioal , default 20GB ]"
+    echo "                      ( note: real memory used maybe greater than this. )"
+    echo "                      [ optional, default 20GB. ]"
     echo "        --jellyfish   jellyfish path."
-    echo "                      [ optioal , default jellyfish ]"
+    echo "                      [ optional, default jellyfish. ]"
     echo "        --mer         mer-size"
-    echo "                      [ optioal , default 21 ]"
-    echo "        --lower       ignore mer with cout < lower."
-    echo "                      [ optioal , default 9 ]"
-    echo "        --upper       ignore mer with cout > upper."
-    echo "                      [ optioal , default 33 ]"
+    echo "                      [ optional, default 21. ]"
+    echo "        --m-lower     maternal kmer count tablle will ignore mer with count < m-lower."
+    echo "                      [ optional, default 9. ]"
+    echo "        --m-upper     maternal kmer count tablle will ignore mer with count > m-upper."
+    echo "                      [ optional, default 33. ]"
+    echo "        --p-lower     paternal kmer count tablle will ignore mer with count < p-lower."
+    echo "                      [ optional, default 9. ]"
+    echo "        --p-upper     paternal kmer count tablle will ignore mer with count > p-upper."
+    echo "                      [ optional, default 33. ]"
+    echo "        --auto_bounds calcuate lower and upper bounds by kmercount table."
+    echo "                      [ optional, default not trigger; no parameter. ]"
+    echo "                      ( note : if auto_bounds is open, it will overwrite --*-lower and --*-upper  ]"
     echo "        --help        print this usage message."
     echo "        "
     echo "Examples :"
@@ -36,7 +43,7 @@ function usage(){
     echo ""
     echo "    ./trioSLR.sh --paternal father.fastq --maternal mater.fastq \\"
     echo "                     --filial son.r1.fastq --memory 20 --thread 20 \\"
-    echo "                     --mer 21 --lower=9 --upper=33 \\"
+    echo "                     --mer 21 --p-lower=9 --p-upper=33 --m-lower=9 --p-upper=33 \\"
     echo "                     --jellyfish /home/software/jellyfish/jellyfish-linux"
 }
 
@@ -47,11 +54,14 @@ MER=21
 JELLY=jellyfish
 CPU=8
 MEMORY=10
-LOWER=9
-UPPER=33
+PLOWER=9
+PUPPER=33
+MLOWER=9
+MUPPER=33
 PATERNAL=""
 MATERNAL=""
 FILIAL=""
+AUTO_BOUNDS=0
 SPATH=`dirname $0`
 ###############################################################################
 # parse arguments
@@ -84,17 +94,28 @@ do
             CPU=$2
             shift
             ;;
-        "--lower")
-            LOWER=$2
+        "--m-lower")
+            MLOWER=$2
             shift
             ;;
-        "--upper")
-            UPPER=$2
+        "--m-upper")
+            MUPPER=$2
+            shift
+            ;;
+        "--p-lower")
+            PLOWER=$2
+            shift
+            ;;
+        "--p-upper")
+            PUPPER=$2
             shift
             ;;
         "--mer")
             MER=$2
             shift
+            ;;
+        "--auto_bounds")
+            AUTO_BOUNDS=1
             ;;
         "--paternal")
             PATERNAL=$2
@@ -124,16 +145,23 @@ echo "    jellyfish      : $JELLY"
 echo "    memory         : $MEMORY GB"
 echo "    thread         : $CPU "
 echo "    mer            : $MER "
-echo "    lower          : $LOWER"
-echo "    upper          : $UPPER"
+echo "    lower(maternal): $MLOWER"
+echo "    upper(maternal): $MUPPER"
+echo "    lower(paternal): $PLOWER"
+echo "    upper(paternal): $PUPPER"
+echo "    auto_bounds    : $AUTO_BOUNDS"
 echo "trioSLR.sh in dir  : $SPATH"
+
 CLASSIFY=$SPATH"/classify"
 FILTER_FQ_BY_BARCODES_AWK=$SPATH"/filter_fq_by_barcodes.awk"
+ANALYSIS=$SPATH"/analysis_kmercount.sh"
+
 # sanity check
 if [[ $MEMORY -lt 1  || $CPU -lt 1 || \
     -z $PATERNAL || -z $MATERNAL || -z $FILIAL || \
     -z $JELLY  || $MER -lt 11 || \
-    $LOWER -lt 1 || $UPPER -gt 100000000 ]] ; then
+    $MLOWER -lt 1 || $MUPPER -gt 100000000 || \
+    $PLOWER -lt 1 || $PUPPER -gt 100000000 ]] ; then
     echo "ERROR : arguments invalid ... exit!!! "
     exit 1
 fi
@@ -161,12 +189,22 @@ echo "__START__"
 echo "extract unique mers by jellyfish ..."
 $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $MATERNAL
 $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL
-# dump filter mers
-$JELLY dump -L $LOWER -U $UPPER maternal_mer_counts.jf -o maternal.mer.filter.fa
-$JELLY dump -L $LOWER -U $UPPER paternal_mer_counts.jf -o paternal.mer.filter.fa
 # dump all mers
 $JELLY dump maternal_mer_counts.jf            -o maternal.mer.fa
 $JELLY dump paternal_mer_counts.jf            -o paternal.mer.fa
+
+if [[ $AUTO_BOUNDS == 1 ]] ; then 
+    sh $ANALYSIS 
+    MLOWER=`grep LOWER_INDEX maternal.bounds.txt| awk -F '=' '{print $2}'`
+    MUPPER=`grep UPPER_INDEX maternal.bounds.txt| awk -F '=' '{print $2}'`
+    PLOWER=`grep LOWER_INDEX paternal.bounds.txt| awk -F '=' '{print $2}'`
+    PUPPER=`grep UPPER_INDEX paternal.bounds.txt| awk -F '=' '{print $2}'`
+fi
+echo "  the real used kmer-count bounds of maternal is [ $MLOWER , $MUPPER ] "
+echo "  the real used kmer-count bounds of paternal is [ $PLOWER , $PUPPER ] "
+# dump filter mers
+$JELLY dump -L $MLOWER -U $MUPPER maternal_mer_counts.jf -o maternal.mer.filter.fa
+$JELLY dump -L $PLOWER -U $PUPPER paternal_mer_counts.jf -o paternal.mer.filter.fa
 # rm temporary files
 rm maternal_mer_counts.jf paternal_mer_counts.jf
 # mix 1 copy of paternal mers and 2 copy of maternal mers
