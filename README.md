@@ -1,11 +1,11 @@
-# trioSLR
+# HAST
 Partition stLFR reads based on trio-binning using prenatally unique markers.
 
 ## INSTALL
 
 ```
-git clone https://github.com/BGI-Qingdao/trioSLR.git
-cd trioSLR
+git clone https://github.com/BGI-Qingdao/HAST.git
+cd HAST
 make
 ```
 
@@ -13,7 +13,7 @@ make
 
 ```
 Usage    :
-    ./trioSLR.sh [OPTION]
+    ./HAST.sh [OPTION]
 
 Trio-phase filial stLFR reads based on paternal NGS reads and maternal NGS reads.
 
@@ -47,11 +47,11 @@ Options  :
         --help        print this usage message.
 
 Examples :
-    ./trioSLR.sh --paternal father.fastq --maternal mater.fastq --filial son.fastq
+    ./HAST.sh --paternal father.fastq --maternal mater.fastq --filial son.fastq
 
-    ./trioSLR.sh --paternal father.fastq --maternal mater.fastq --filial son.r1.fastq --filial son.r2.fastq
+    ./HAST.sh --paternal father.fastq --maternal mater.fastq --filial son.r1.fastq --filial son.r2.fastq
 
-    ./trioSLR.sh --paternal father.fastq --maternal mater.fastq \
+    ./HAST.sh --paternal father.fastq --maternal mater.fastq \
                      --filial son.r1.fastq --memory 20 --thread 20 \
                      --mer 21 --p-lower=9 --p-upper=33 --m-lower=9 --p-upper=33 \
                      --jellyfish /home/software/jellyfish/jellyfish-linux
