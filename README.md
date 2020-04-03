@@ -19,7 +19,9 @@ Trio-phase filial stLFR reads based on paternal NGS reads and maternal NGS reads
 
 Options  :
         --paternal    paternal NGS reads file in fastq format.
+                      ( note : gzip format IS NOT supported. )
         --maternal    maternal NGS reads file in fastq format.
+                      ( note : gzip format IS NOT supported. )
         --filial      filial stLFR reads file in fastq format.
                       file in gzip format is accepted, but filename must end by .gz
         --thread      threads num.
