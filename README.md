@@ -1,7 +1,7 @@
 # trioSLR
-trio-phase stLFR reads based on paternal and maternal NGS reads.
+Partition stLFR reads based on trio-binning using prenatally unique markers.
 
-## INSTALl
+## INSTALL
 
 ```
 git clone https://github.com/BGI-Qingdao/trioSLR.git
