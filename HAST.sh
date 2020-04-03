@@ -139,7 +139,7 @@ do
     shift
 done
 # print arguments
-echo "trioSLR starting with : "
+echo "HAST starting with : "
 echo "    paternal input : $PATERNAL"
 echo "    maternal input : $MATERNAL"
 echo "    filial input   : $FILIAL"
