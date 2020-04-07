@@ -16,6 +16,8 @@ void logtime(){
     char* dt = ctime(&now);
     std::cerr<<dt<<std::endl;
 }
+double g_hap0_fac = 1.0f ;
+double g_hap1_fac = 1.0f ;
 //
 // load & cache maternal unique kmer & paternal unique kmer
 //
@@ -60,8 +62,12 @@ int getHap(const std::string & barcode , const std::map<int,int> & data){
     if( barcode == "0_0_0" || barcode == "0_0" || barcode == "0" )
         return -1;
     if( data.find(0) != data.end() &&  data.find(1) != data.end() ){
-        if( data.at(0) > data.at(1) ) return 0 ; 
-        if( data.at(1) > data.at(0) ) return 1 ;
+        double df0 =  double(data.at(0)) / double(g_kmers[0].size());
+        double df1 =  double(data.at(1)) / double(g_kmers[1].size());
+        df0 *= g_hap0_fac;
+        df1 *= g_hap1_fac;
+        if( df0 > df1 ) return 0 ; 
+        if( df1 > df0 ) return 1 ;
         return -1 ;
     } else if ( data.find(0) != data.end() ) {
         if ( data.at(0) > 0 ) return 0 ;
@@ -85,8 +91,8 @@ void printBarcodeInfos(const BarcodeCache& g_barcode_haps){
         const auto & data=pair.second;
         std::cout<<'\t'<<getHap(pair.first,data);
         std::cout<<'\t'<<getHapCount(data,0);
-        std::cout<<'\t'<<getHapCount(data,1);
-        std::cout<<'\t'<<getHapCount(data,-1)<<'\n';
+        std::cout<<'\t'<<getHapCount(data,1)<<'\n';
+        //std::cout<<'\t'<<getHapCount(data,-1)<<'\n';
     }
 }
 
@@ -186,20 +192,16 @@ struct MultiThread {
             std::string kmer = get_cannonical(seq.substr(i,g_K));
             if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
                 vote[0] ++ ;
-                //std::cerr<<"hap0 : "<<kmer<<std::endl;
             }
             if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
                 vote[1] ++ ;
-                //std::cerr<<"hap1 : "<<kmer<<std::endl;
             }
         }
         std::string barcode = parseName(head);
-        if( vote[0] > 0 && vote[0] > vote[1] )
-            barcode_caches[index].IncrBarcodeHaps(barcode,0);
-        else if( vote[1] > 0 && vote[1] > vote[0] )
-            barcode_caches[index].IncrBarcodeHaps(barcode,1);
-        else
-            barcode_caches[index].IncrBarcodeHaps(barcode,-1);
+        if( vote[0] > 0 )
+            barcode_caches[index].IncrBarcodeHaps(barcode,0,vote[0]);
+        if( vote[1] > 0 )
+            barcode_caches[index].IncrBarcodeHaps(barcode,1,vote[1]);
     }
     void submit(const std::string & head ,const std::string & seq){
         static long index = 0;
@@ -257,8 +259,8 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
 }
 
 void printUsage(){
-    std::cerr<<"Uasge :\n\tclassify --hap0 hap0 --hap1 hap1 --read read1.fq [--read read2.fq] [--thread t_num]"<<std::endl;
-    std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) read_count_hap0 read_count_hap1 read_count_hap-1"<<std::endl;
+    std::cerr<<"Uasge :\n\tclassify --hap0 hap0 --hap1 hap1 --read read1.fq [--read read2.fq] [--thread t_num (8 default) ] [--weight0 w0 (1.0 default) ] [--weight1 w1 (1.0 default) ] "<<std::endl;
+    std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) kmer_count_hap0 kmer_count_hap1"<<std::endl;
     std::cerr<<"notice : --read accept file in gzip format , but file must end by \".gz\""<<std::endl;
 }
 void InitAdaptor(){
@@ -297,13 +299,15 @@ int main(int argc ,char ** argv ){
         {"hap1",  required_argument, NULL, 'm'},
         {"read", required_argument,  NULL, 'r'},
         {"thread",required_argument, NULL, 't'},
+        {"weight0",required_argument, NULL, 'w'},
+        {"weight1",required_argument, NULL, 'u'},
         {"help",  no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
-    static char optstring[] = "p:m:l:r:t:h";
+    static char optstring[] = "p:m:l:r:t:w:u:h";
     std::string hap0 , hap1 ;
     std::vector<std::string> read;
-    int t_num=1;
+    int t_num=8;
     while(1){
         int c = getopt_long(argc, argv, optstring, long_options, NULL);
         if (c<0) break;
@@ -320,6 +324,12 @@ int main(int argc ,char ** argv ){
             case 't':
                 t_num = atoi(optarg);
                 break;
+            case 'u':
+                g_hap1_fac=atof(optarg);
+                break;
+            case 'w':
+                g_hap0_fac=atof(optarg);
+                break;
             case 'h':
             default :
                 printUsage();
@@ -335,6 +345,8 @@ int main(int argc ,char ** argv ){
     assert(get_cannonical("AGCTA")=="AGCTA");
     assert(get_cannonical("TGCTT")=="AAGCA");
     std::cerr<<"__START__"<<std::endl;
+    std::cerr<<" use hap0 weight "<<g_hap1_fac<<std::endl;
+    std::cerr<<" use hap1 weight "<<g_hap1_fac<<std::endl;
     logtime();
     std::cerr<<"__load hap0 kmers__"<<std::endl;
     load_kmers(hap0,0);
