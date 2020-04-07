@@ -202,6 +202,8 @@ struct MultiThread {
             barcode_caches[index].IncrBarcodeHaps(barcode,0,vote[0]);
         if( vote[1] > 0 )
             barcode_caches[index].IncrBarcodeHaps(barcode,1,vote[1]);
+        if( vote[0] == 0 && vote[1] == 0 )
+            barcode_caches[index].IncrBarcodeHaps(barcode,-1,1);
     }
     void submit(const std::string & head ,const std::string & seq){
         static long index = 0;
@@ -345,7 +347,7 @@ int main(int argc ,char ** argv ){
     assert(get_cannonical("AGCTA")=="AGCTA");
     assert(get_cannonical("TGCTT")=="AAGCA");
     std::cerr<<"__START__"<<std::endl;
-    std::cerr<<" use hap0 weight "<<g_hap1_fac<<std::endl;
+    std::cerr<<" use hap0 weight "<<g_hap0_fac<<std::endl;
     std::cerr<<" use hap1 weight "<<g_hap1_fac<<std::endl;
     logtime();
     std::cerr<<"__load hap0 kmers__"<<std::endl;
