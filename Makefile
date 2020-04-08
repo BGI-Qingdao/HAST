@@ -1,6 +1,6 @@
-.PHONY: all tool
+.PHONY: all tool clean
 
-all: classify tool clean
+all: classify tool 
 
 classify : classify.cpp
 	g++ -c  gzstream/gzstream.C -I./gzstream -lz -o gzstream.o
