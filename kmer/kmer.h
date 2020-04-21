@@ -9,8 +9,20 @@ typedef unsigned long long  ubyte8;
 
 struct BaseStr{
     static char base2int(char base) { return  (char)(((base)&0x06)>>1)  ; }   //base ACTG => int 0123
+    static char int2base(int seq) { return  "ACTG"[seq] ;}
     static char int_comp(char seq) { return  (char)(seq^0x02) ; }
-
+    static std::string BaseStr2Str(const std::string & base) {
+        int len = base.size();
+        std::string ret ;
+        if ( len < 1 )
+        {
+            return ret ;
+        }
+        ret.resize(len);
+        for( int i = 0 ; i < len ; i++ )
+            ret[i] = int2base(base.at(i));
+        return ret ;
+    }
     static std::string str2BaseStr(const std::string & read ){
         int len = read.size();
         std::string ret ;
@@ -235,6 +247,17 @@ struct Kmer
     Kmer reverseComplement ()
     {
         return fastReverseComp (*this, overlap );
+    }
+    static std::string ToBaseStr(const Kmer & k){
+        Kmer tmp = k;
+        std::string kmer;
+        kmer.resize(overlap);
+        for( int i = 0 ; i <overlap ; i++ ) {
+            char next = tmp.low & 0x3 ;
+            kmer[overlap-1-i]=next;
+            tmp.RightBitMoveBy2();
+        }
+        return kmer;
     }
 };
 

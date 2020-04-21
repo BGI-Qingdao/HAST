@@ -33,6 +33,7 @@ void load_kmers(const std::string & file,int index){
     if(index==0){
         std::getline(ifs,line);
         g_K = line.size();
+        Kmer::InitFilter(g_K);
         g_kmers[index].insert(Kmer::str2Kmer(line));
         total_kmer++;
     }
@@ -245,22 +246,22 @@ void InitAdaptor(){
     for(int i = 0 ; i <(int)kmers.size();i++){
         if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
             g_kmers[0].erase(kmers.at(i));
-            std::cerr<<" INFO : erase a adaptor kmer from hap 0 "<<std::endl;
+            std::cerr<<" INFO : erase a adaptor kmer from hap 0 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
         }
         if( g_kmers[1].find(kmers.at(i)) != g_kmers[1].end() ){
             g_kmers[1].erase(kmers.at(i));
-            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ;"<<std::endl;
+            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
         }
     }
     std::vector<Kmer> kmers2 = Kmer::chopRead2Kmer(r2);
     for(int i = 0 ; i <(int)kmers2.size();i++){
         if( g_kmers[0].find(kmers2.at(i)) != g_kmers[0].end() ){
             g_kmers[0].erase(kmers2.at(i));
-            std::cerr<<" INFO : erase a adaptor kmer from hap 0 "<<std::endl;
+            std::cerr<<" INFO : erase a adaptor kmer from hap 0 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
         }
         if( g_kmers[1].find(kmers2.at(i)) != g_kmers[1].end() ){
             g_kmers[1].erase(kmers2.at(i));
-            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ;"<<std::endl;
+            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
         }
     }
 }
