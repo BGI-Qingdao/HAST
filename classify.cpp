@@ -130,18 +130,25 @@ struct MultiThread {
     bool end;
     bool busy;
     void Worker(int index){
+        int miss = 0;
+        int hit = 0 ;
         Buffer buffer;
         //std::pair<std::string,std::string> job;
         while(true){
             locks[index].lock();
             if( caches[index].empty() ){
+                miss ++ ;
                 busy = false ;
                 locks[index].unlock();
-                if(end) return ;
+                if(end) { 
+                    std::cerr<<"thread="<<index<<" miss="<<miss<<" hit="<<std::endl;
+                    return ;
+                }
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
                 continue;
             }
             if( ! caches[index].empty() ){
+                hit ++ ;
                 if( caches[index].size() > 100 ) busy = true ;
                 else if ( caches[index].size() < 30 ) busy = false ;
                 std::swap(buffer,caches[index].top());
