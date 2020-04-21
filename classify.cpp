@@ -11,6 +11,9 @@
 #include <chrono>
 #include <getopt.h>
 #include "gzstream/gzstream.h"
+#include "kmer/kmer.h"
+int Kmer::overlap = 0 ;
+Kmer Kmer::WORDFILTER ;
 void logtime(){
     time_t now = time(0);
     char* dt = ctime(&now);
@@ -21,7 +24,7 @@ double g_hap1_fac = 1.0f ;
 //
 // load & cache maternal unique kmer & paternal unique kmer
 //
-std::set<std::string> g_kmers[2];
+std::set<Kmer> g_kmers[2];
 int g_K=0;
 void load_kmers(const std::string & file,int index){
     std::ifstream ifs(file);
@@ -30,11 +33,11 @@ void load_kmers(const std::string & file,int index){
     if(index==0){
         std::getline(ifs,line);
         g_K = line.size();
-        g_kmers[index].insert(line);
+        g_kmers[index].insert(Kmer::str2Kmer(line));
         total_kmer++;
     }
     while(!std::getline(ifs,line).eof()){
-        g_kmers[index].insert(line);
+        g_kmers[index].insert(Kmer::str2Kmer(line));
         total_kmer++;
     }
     std::cerr<<"Recorded "<<total_kmer<<" haplotype "<<index<<" specific "<<g_K<<"-mers\n"; 
@@ -97,35 +100,6 @@ void printBarcodeInfos(const BarcodeCache& g_barcode_haps){
 }
 
 //
-// kmer relate functions
-//
-std::map<char,char> g_oppo ;
-void InitMap(){
-    g_oppo['a']='T';
-    g_oppo['A']='T';
-    g_oppo['g']='C';
-    g_oppo['G']='C';
-    g_oppo['c']='G';
-    g_oppo['C']='G';
-    g_oppo['t']='A';
-    g_oppo['T']='A';
-}
-std::string reverse_complement(const std::string & kmer){
-    std::string ret = kmer;
-    for(int i = 0 ; i< (int)kmer.size(); i++)
-        ret[kmer.size()-i-1] = g_oppo[kmer[i]];
-    return ret ;
-}
-
-std::string get_cannonical(const std::string & kmer){
-   std::string rc = reverse_complement(kmer);
-   if (rc < kmer)
-      return rc;
-   else
-      return kmer;
-}
-
-//
 //reads relate functions
 //
 
@@ -185,19 +159,18 @@ struct MultiThread {
         delete [] locks;
         delete [] barcode_caches;
     }
-    void process_reads(const std::string & head ,
+    void process_reads(const std::string & barcode ,
                          const std::string & seq , int index) {
         int vote[2] ; vote[0]=0;vote[1]=0;
-        for(int i = 0 ; i <(int)seq.size()-g_K+1;i++){
-            std::string kmer = get_cannonical(seq.substr(i,g_K));
-            if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
+        std::vector<Kmer> kmers=Kmer::chopRead2Kmer(seq);
+        for(int i = 0 ; i <(int)kmers.size();i++){
+            if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
                 vote[0] ++ ;
             }
-            if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
+            if( g_kmers[1].find(kmers.at(i)) != g_kmers[1].end() ){
                 vote[1] ++ ;
             }
         }
-        std::string barcode = parseName(head);
         if( vote[0] > 0 )
             barcode_caches[index].IncrBarcodeHaps(barcode,0,vote[0]);
         if( vote[1] > 0 )
@@ -250,7 +223,7 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
         in = new std::ifstream(file);
     while(!std::getline(*in,head).eof()){
         std::getline(*in,seq);
-        mt.submit(head,seq);
+        mt.submit(parseName(head),BaseStr::str2BaseStr(seq));
         std::getline(*in,tmp);
         std::getline(*in,tmp);
     }
@@ -268,26 +241,26 @@ void printUsage(){
 void InitAdaptor(){
     std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGATCACCAAGGATCGCCATAGTCCATGCTAAAGGACGTCAGGAAGGGCGATCTCAGG");
     std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGGCGACGGCCACGAAGCTAACAGCCAATCTGCGTAACAGCCAAACCTGAGATCGCCC");
-    for(int i = 0 ; i <(int)r1.size()-g_K+1;i++){
-        std::string kmer = get_cannonical(r1.substr(i,g_K));
-        if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
-            g_kmers[0].erase(kmer);
-            std::cerr<<" INFO : erase adaptor kmer from hap 0 ; kmer="<<kmer<<std::endl;
+    std::vector<Kmer> kmers = Kmer::chopRead2Kmer(r1);
+    for(int i = 0 ; i <(int)kmers.size();i++){
+        if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
+            g_kmers[0].erase(kmers.at(i));
+            std::cerr<<" INFO : erase a adaptor kmer from hap 0 "<<std::endl;
         }
-        if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
-            g_kmers[1].erase(kmer);
-            std::cerr<<" INFO : erase adaptor kmer from hap 1 ; kmer="<<kmer<<std::endl;
+        if( g_kmers[1].find(kmers.at(i)) != g_kmers[1].end() ){
+            g_kmers[1].erase(kmers.at(i));
+            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ;"<<std::endl;
         }
     }
-    for(int i = 0 ; i <(int)r2.size()-g_K+1;i++){
-        std::string kmer = get_cannonical(r2.substr(i,g_K));
-        if( g_kmers[0].find(kmer) != g_kmers[0].end() ){
-            g_kmers[0].erase(kmer);
-            std::cerr<<" INFO : erase adaptor kmer from hap 0 ; kmer="<<kmer<<std::endl;
+    std::vector<Kmer> kmers2 = Kmer::chopRead2Kmer(r2);
+    for(int i = 0 ; i <(int)kmers2.size();i++){
+        if( g_kmers[0].find(kmers2.at(i)) != g_kmers[0].end() ){
+            g_kmers[0].erase(kmers2.at(i));
+            std::cerr<<" INFO : erase a adaptor kmer from hap 0 "<<std::endl;
         }
-        if( g_kmers[1].find(kmer) != g_kmers[1].end() ){
-            g_kmers[1].erase(kmer);
-            std::cerr<<" INFO : erase adaptor kmer from hap 1 ; kmer="<<kmer<<std::endl;
+        if( g_kmers[1].find(kmers2.at(i)) != g_kmers[1].end() ){
+            g_kmers[1].erase(kmers2.at(i));
+            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ;"<<std::endl;
         }
     }
 }
@@ -342,10 +315,7 @@ int main(int argc ,char ** argv ){
         printUsage();
         return -1;
     }
-    InitMap();
     assert(parseName("VSDSDS#XXX_xxx_s/1")=="XXX_xxx_s");
-    assert(get_cannonical("AGCTA")=="AGCTA");
-    assert(get_cannonical("TGCTT")=="AAGCA");
     std::cerr<<"__START__"<<std::endl;
     std::cerr<<" use hap0 weight "<<g_hap0_fac<<std::endl;
     std::cerr<<" use hap1 weight "<<g_hap1_fac<<std::endl;
