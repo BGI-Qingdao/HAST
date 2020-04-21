@@ -117,12 +117,21 @@ std::string parseName(const std::string & head){
     return head.substr(s+1,e-s-1);
 }
 
+#define max_buffer 1024
+struct Buffer{
+    std::array<std::string,max_buffer> heads;
+    std::array<std::string,max_buffer> seqs ;
+    void Init() { size = 0 ; }
+    int size ;
+};
+
 struct MultiThread {
     int t_nums ;
     bool end;
     bool busy;
     void Worker(int index){
-        std::pair<std::string,std::string> job;
+        Buffer buffer;
+        //std::pair<std::string,std::string> job;
         while(true){
             locks[index].lock();
             if( caches[index].empty() ){
@@ -133,12 +142,13 @@ struct MultiThread {
                 continue;
             }
             if( ! caches[index].empty() ){
-                job=caches[index].top();
-                if( caches[index].size() > 10000000 ) busy = true ;
-                else if ( caches[index].size() < 300000 ) busy = false ;
+                if( caches[index].size() > 100 ) busy = true ;
+                else if ( caches[index].size() < 30 ) busy = false ;
+                std::swap(buffer,caches[index].top());
                 caches[index].pop();
                 locks[index].unlock();
-                process_reads(job.first,job.second,index);
+                for( int i = 0 ; i < buffer.size ; i ++ )
+                    process_reads(buffer.heads.at(i),buffer.seqs.at(i),index);
             } else 
                 locks[index].unlock();
         }
@@ -151,7 +161,8 @@ struct MultiThread {
         busy = false;
         end=false;
         for(int i = 0 ; i< t_num ; i++){
-            caches.push_back(std::stack< std::pair<std::string,std::string> >());
+            caches.push_back(std::stack<Buffer>());
+            //caches.push_back(std::stack< std::pair<std::string,std::string> >());
             threads[i] = new std::thread([this,i](){int index=i ;Worker(index); });
         }
     }
@@ -180,13 +191,14 @@ struct MultiThread {
         if( vote[0] == 0 && vote[1] == 0 )
             barcode_caches[index].IncrBarcodeHaps(barcode,-1,1);
     }
-    void submit(const std::string & head ,const std::string & seq){
+    //void submit(const std::string & head ,const std::string & seq){
+    void submit(const Buffer & buffer ){
         static long index = 0;
         while( busy ) { std::this_thread::sleep_for(std::chrono::seconds(1));}
         index ++ ;
         int id = index % t_nums;
         locks[id].lock();
-        caches[id].push(std::make_pair(head,seq));
+        caches[id].push(buffer);//std::make_pair(head,seq));
         locks[id].unlock();
     }
     void wait(){
@@ -199,7 +211,8 @@ struct MultiThread {
         for(int i = 0 ; i<t_nums ;i++)
             final_data.Add(barcode_caches[i]);
     }
-    std::vector<std::stack< std::pair<std::string,std::string> >>  caches;
+    //std::vector<std::stack< std::pair<std::string,std::string> >>  caches;
+    std::vector<std::stack<Buffer> > caches;
     std::mutex * locks;
     std::thread ** threads; 
     BarcodeCache * barcode_caches;
@@ -223,11 +236,24 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
         in = new igzstream(file.c_str());
     else 
         in = new std::ifstream(file);
+    Buffer buffer ;
+    buffer.Init();
     while(!std::getline(*in,head).eof()){
         std::getline(*in,seq);
-        mt.submit(head,seq);
+        //mt.submit(head,seq);
+        buffer.heads.at(buffer.size) = head ;
+        buffer.seqs.at(buffer.size) = seq;
+        buffer.size ++ ;
+        if ( buffer.size >= max_buffer ){
+            mt.submit(buffer);
+            buffer.Init();
+        }
         std::getline(*in,tmp);
         std::getline(*in,tmp);
+    }
+    if( buffer.size > 0 ){
+        mt.submit(buffer);
+        buffer.Init();
     }
     mt.end=true;
     mt.wait();
@@ -258,11 +284,11 @@ void InitAdaptor(){
     for(int i = 0 ; i <(int)kmers2.size();i++){
         if( g_kmers[0].find(kmers2.at(i)) != g_kmers[0].end() ){
             g_kmers[0].erase(kmers2.at(i));
-            std::cerr<<" INFO : erase a adaptor kmer from hap 0 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
+            std::cerr<<" INFO : erase a adaptor kmer from hap 0 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers2.at(i)))<<std::endl;
         }
         if( g_kmers[1].find(kmers2.at(i)) != g_kmers[1].end() ){
             g_kmers[1].erase(kmers2.at(i));
-            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
+            std::cerr<<" INFO : erase a adaptor kmer from hap 1 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers2.at(i)))<<std::endl;
         }
     }
 }
@@ -282,12 +308,17 @@ void TestAll(){
     assert(Kmer::str2Kmer(BaseStr::str2BaseStr("GAGCT")).low == 0xD9);
     assert(Kmer::str2Kmer(BaseStr::str2BaseStr("GAGCT")).high == 0);
     auto kmers = Kmer::chopRead2Kmer(BaseStr::str2BaseStr("GAGCTA"));
+    assert(kmers.size() == 2 );
     // GAGCT->AGCTC 00 1101 1001 -> 0xD9
     // AGCTA        00 1101 1000 -> 0xD8
     assert(kmers[0].high == 0 );
     assert(kmers[0].low == 0xD9 );
     assert(kmers[1].high == 0 );
     assert(kmers[1].low == 0xD8 );
+    std::string k1 = BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers[0]));
+    std::string k2 = BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers[1]));
+    assert(k1 == "AGCTC");
+    assert(k2 == "AGCTA");
 }
 
 //
