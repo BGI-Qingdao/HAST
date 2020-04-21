@@ -141,7 +141,7 @@ struct MultiThread {
                 busy = false ;
                 locks[index].unlock();
                 if(end) { 
-                    std::cerr<<"thread="<<index<<" miss="<<miss<<" hit="<<std::endl;
+                    std::cerr<<"thread="<<index<<" miss="<<miss<<" hit="<<hit<<std::endl;
                     return ;
                 }
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
