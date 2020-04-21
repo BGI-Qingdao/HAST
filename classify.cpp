@@ -34,11 +34,11 @@ void load_kmers(const std::string & file,int index){
         std::getline(ifs,line);
         g_K = line.size();
         Kmer::InitFilter(g_K);
-        g_kmers[index].insert(Kmer::str2Kmer(line));
+        g_kmers[index].insert(Kmer::str2Kmer(BaseStr::str2BaseStr(line)));
         total_kmer++;
     }
     while(!std::getline(ifs,line).eof()){
-        g_kmers[index].insert(Kmer::str2Kmer(line));
+        g_kmers[index].insert(Kmer::str2Kmer(BaseStr::str2BaseStr(line)));
         total_kmer++;
     }
     std::cerr<<"Recorded "<<total_kmer<<" haplotype "<<index<<" specific "<<g_K<<"-mers\n"; 
@@ -160,10 +160,11 @@ struct MultiThread {
         delete [] locks;
         delete [] barcode_caches;
     }
-    void process_reads(const std::string & barcode ,
-                         const std::string & seq , int index) {
+    void process_reads(const std::string & head ,
+                         const std::string & read , int index) {
         int vote[2] ; vote[0]=0;vote[1]=0;
-        std::vector<Kmer> kmers=Kmer::chopRead2Kmer(seq);
+        std::string barcode = parseName(head);
+        std::vector<Kmer> kmers=Kmer::chopRead2Kmer(BaseStr::str2BaseStr(read));
         for(int i = 0 ; i <(int)kmers.size();i++){
             if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
                 vote[0] ++ ;
@@ -224,7 +225,7 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
         in = new std::ifstream(file);
     while(!std::getline(*in,head).eof()){
         std::getline(*in,seq);
-        mt.submit(parseName(head),BaseStr::str2BaseStr(seq));
+        mt.submit(head,seq);
         std::getline(*in,tmp);
         std::getline(*in,tmp);
     }
@@ -242,7 +243,7 @@ void printUsage(){
 void InitAdaptor(){
     std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGATCACCAAGGATCGCCATAGTCCATGCTAAAGGACGTCAGGAAGGGCGATCTCAGG");
     std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGGCGACGGCCACGAAGCTAACAGCCAATCTGCGTAACAGCCAAACCTGAGATCGCCC");
-    std::vector<Kmer> kmers = Kmer::chopRead2Kmer(r1);
+    std::vector<Kmer> kmers = Kmer::chopRead2Kmer(BaseStr::str2BaseStr(r1));
     for(int i = 0 ; i <(int)kmers.size();i++){
         if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
             g_kmers[0].erase(kmers.at(i));
@@ -253,7 +254,7 @@ void InitAdaptor(){
             std::cerr<<" INFO : erase a adaptor kmer from hap 1 ; kmer= "<<BaseStr::BaseStr2Str(Kmer::ToBaseStr(kmers.at(i)))<<std::endl;
         }
     }
-    std::vector<Kmer> kmers2 = Kmer::chopRead2Kmer(r2);
+    std::vector<Kmer> kmers2 = Kmer::chopRead2Kmer(BaseStr::str2BaseStr(r2));
     for(int i = 0 ; i <(int)kmers2.size();i++){
         if( g_kmers[0].find(kmers2.at(i)) != g_kmers[0].end() ){
             g_kmers[0].erase(kmers2.at(i));
@@ -265,11 +266,36 @@ void InitAdaptor(){
         }
     }
 }
+
+void TestAll(){
+    assert(parseName("VSDSDS#XXX_xxx_s/1")=="XXX_xxx_s");
+    Kmer::InitFilter(5);
+    auto str1=BaseStr::str2BaseStr("AGCTC");
+    int  t1[] = { '\000','\003','\001','\002','\001'};
+    for( int i = 0 ; i <5 ; i++ ) assert(str1[i] == t1[i]);
+    auto str2 = BaseStr::str2BaseStr("GAGCT");
+    int  t2[] = {'\003','\000','\003','\001','\002'};
+    for( int i = 0 ; i <5 ; i++ ) assert(str2[i] == t2[i]);
+                         // 00 1101 1001
+    assert(Kmer::str2Kmer(BaseStr::str2BaseStr("AGCTC")).low == 0xD9);
+    assert(Kmer::str2Kmer(BaseStr::str2BaseStr("AGCTC")).high == 0);
+    assert(Kmer::str2Kmer(BaseStr::str2BaseStr("GAGCT")).low == 0xD9);
+    assert(Kmer::str2Kmer(BaseStr::str2BaseStr("GAGCT")).high == 0);
+    auto kmers = Kmer::chopRead2Kmer(BaseStr::str2BaseStr("GAGCTA"));
+    // GAGCT->AGCTC 00 1101 1001 -> 0xD9
+    // AGCTA        00 1101 1000 -> 0xD8
+    assert(kmers[0].high == 0 );
+    assert(kmers[0].low == 0xD9 );
+    assert(kmers[1].high == 0 );
+    assert(kmers[1].low == 0xD8 );
+}
+
 //
 // Main function
 //
 
 int main(int argc ,char ** argv ){
+    TestAll();
     static struct option long_options[] = {
         {"hap0",  required_argument, NULL, 'p'},
         {"hap1",  required_argument, NULL, 'm'},
@@ -316,7 +342,6 @@ int main(int argc ,char ** argv ){
         printUsage();
         return -1;
     }
-    assert(parseName("VSDSDS#XXX_xxx_s/1")=="XXX_xxx_s");
     std::cerr<<"__START__"<<std::endl;
     std::cerr<<" use hap0 weight "<<g_hap0_fac<<std::endl;
     std::cerr<<" use hap1 weight "<<g_hap1_fac<<std::endl;

@@ -11,7 +11,7 @@ struct BaseStr{
     static char base2int(char base) { return  (char)(((base)&0x06)>>1)  ; }   //base ACTG => int 0123
     static char int2base(int seq) { return  "ACTG"[seq] ;}
     static char int_comp(char seq) { return  (char)(seq^0x02) ; }
-    static std::string BaseStr2Str(const std::string & base) {
+    static std::string BaseStr2Str(const std::vector<char>& base) {
         int len = base.size();
         std::string ret ;
         if ( len < 1 )
@@ -23,9 +23,9 @@ struct BaseStr{
             ret[i] = int2base(base.at(i));
         return ret ;
     }
-    static std::string str2BaseStr(const std::string & read ){
+    static std::vector<char> str2BaseStr(const std::string & read ){
         int len = read.size();
-        std::string ret ;
+        std::vector<char> ret ;
         if ( len < 1 )
         {
             return ret ;
@@ -35,10 +35,10 @@ struct BaseStr{
             ret[i] = base2int(read.at(i));
         return ret ;
     }
-    static std::string reverseComplementSeq ( const std::string & str  )
+    static std::vector<char> reverseComplementSeq ( const std::vector<char> & str  )
     {
         int len = str.size();
-        std::string ret ;
+        std::vector<char> ret ;
         if ( len < 1 )
         {
             return ret ;
@@ -106,13 +106,6 @@ struct Kmer
       low |= temp;
     }
 
-    static Kmer KmerAnd( Kmer  kmer1, Kmer kmer2 )
-    {
-        kmer1.high &= kmer2.high;
-        kmer1.low &= kmer2.low;
-        return kmer1;
-    }
-
     void nextKmer (char ch )
     {
         LeftBitMoveBy2();
@@ -157,7 +150,7 @@ struct Kmer
         high = 0 ; low = 0;
     }
     // make sure str is base2int str , not  AGCT str
-    static Kmer str2Kmer(const std::string & str){
+    static Kmer str2Kmer(const std::vector<char> & str){
         assert(str.size() == overlap);
         Kmer word; word.Init();
         for (int index = 0; index < overlap; index++ )
@@ -173,12 +166,12 @@ struct Kmer
     }
 
     // make sure read is base2int str , not  AGCT str
-    static std::vector<Kmer> chopRead2Kmer( const std::string & read ){
+    static std::vector<Kmer> chopRead2Kmer( const std::vector<char> & read ){
         int rlen = read.size() ;
         assert(rlen >= overlap);
         std::vector<Kmer>  ret;
         Kmer word; word.Init();
-        std::string bal_read = BaseStr::reverseComplementSeq(read);
+        std::vector<char> bal_read = BaseStr::reverseComplementSeq(read);
         for (int index = 0; index < overlap; index++ )
         {
             word.LeftBitMoveBy2();
@@ -248,9 +241,9 @@ struct Kmer
     {
         return fastReverseComp (*this, overlap );
     }
-    static std::string ToBaseStr(const Kmer & k){
+    static std::vector<char> ToBaseStr(const Kmer & k){
         Kmer tmp = k;
-        std::string kmer;
+        std::vector<char> kmer;
         kmer.resize(overlap);
         for( int i = 0 ; i <overlap ; i++ ) {
             char next = tmp.low & 0x3 ;
