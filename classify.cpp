@@ -131,25 +131,25 @@ struct MultiThread {
     bool end;
     bool busy;
     void Worker(int index){
-        int miss = 0;
-        int hit = 0 ;
+        //int miss = 0;
+        //int hit = 0 ;
         Buffer buffer;
         //std::pair<std::string,std::string> job;
         while(true){
             locks[index].lock();
             if( caches[index].empty() ){
-                miss ++ ;
+                //miss ++ ;
                 busy = false ;
                 locks[index].unlock();
                 if(end) { 
-                    std::cerr<<"thread="<<index<<" miss="<<miss<<" hit="<<hit<<std::endl;
+                    //std::cerr<<"thread="<<index<<" miss="<<miss<<" hit="<<hit<<std::endl;
                     return ;
                 }
                 std::this_thread::sleep_for(std::chrono::microseconds(10));
                 continue;
             }
             if( ! caches[index].empty() ){
-                hit ++ ;
+                //hit ++ ;
                 if( caches[index].size() > 300 ) busy = true ;
                 else if ( caches[index].size() < 50 ) busy = false ;
                 std::swap(buffer,caches[index].top());
@@ -282,9 +282,10 @@ void printUsage(){
     std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) kmer_count_hap0 kmer_count_hap1"<<std::endl;
     std::cerr<<"notice : --read accept file in gzip format , but file must end by \".gz\""<<std::endl;
 }
+
 void InitAdaptor(){
-    std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGATCACCAAGGATCGCCATAGTCCATGCTAAAGGACGTCAGGAAGGGCGATCTCAGG");
-    std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGGCGACGGCCACGAAGCTAACAGCCAATCTGCGTAACAGCCAAACCTGAGATCGCCC");
+    std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA");
+    std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG");
     std::vector<Kmer> kmers = Kmer::chopRead2Kmer(BaseStr::str2BaseStr(r1));
     for(int i = 0 ; i <(int)kmers.size();i++){
         if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
