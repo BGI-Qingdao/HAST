@@ -1,6 +1,6 @@
 #include <iostream>
 #include <map>
-#include <set>
+#include <unordered_set>
 #include <fstream>
 #include <cassert>
 #include <ctime>
@@ -24,7 +24,8 @@ double g_hap1_fac = 1.0f ;
 //
 // load & cache maternal unique kmer & paternal unique kmer
 //
-std::set<Kmer> g_kmers[2];
+std::unordered_set<Kmer> g_kmers[2];
+
 int g_K=0;
 void load_kmers(const std::string & file,int index){
     std::ifstream ifs(file);
@@ -149,8 +150,8 @@ struct MultiThread {
             }
             if( ! caches[index].empty() ){
                 hit ++ ;
-                if( caches[index].size() > 100 ) busy = true ;
-                else if ( caches[index].size() < 30 ) busy = false ;
+                if( caches[index].size() > 300 ) busy = true ;
+                else if ( caches[index].size() < 50 ) busy = false ;
                 std::swap(buffer,caches[index].top());
                 caches[index].pop();
                 locks[index].unlock();

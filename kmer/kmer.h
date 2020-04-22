@@ -254,4 +254,14 @@ struct Kmer
     }
 };
 
+namespace std{
+	template<>
+		struct hash<Kmer>
+		{
+			size_t operator()(const Kmer& x) const
+			{
+				return x.low;
+			}
+		};
+}
 #endif
