@@ -179,10 +179,18 @@ struct MultiThread {
         delete [] locks;
         delete [] barcode_caches;
     }
+    bool containN(const std::string & read){
+        for( char c : read ) if ( c == 'N' ) return true ;
+        return false ; 
+    }
     void process_reads(const std::string & head ,
                          const std::string & read , int index) {
         int vote[2] ; vote[0]=0;vote[1]=0;
         std::string barcode = parseName(head);
+        if( containN(read) ){
+            barcode_caches[index].IncrBarcodeHaps(barcode,-1,1);
+            return ;
+        }
         std::vector<Kmer> kmers=Kmer::chopRead2Kmer(BaseStr::str2BaseStr(read));
         for(int i = 0 ; i <(int)kmers.size();i++){
             if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
