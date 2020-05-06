@@ -1,5 +1,5 @@
 # HAST
-Partition stLFR reads based on trio-binning using prenatally unique markers.
+Partition stLFR reads based on trio-binning algorithm using paternally unique markers.
 
 ## INSTALL
 
@@ -15,35 +15,35 @@ make
 Usage    :
     ./HAST.sh [OPTION]
 
-Trio-phase filial stLFR reads based on paternal NGS reads and maternal NGS reads.
+Trio-phase filial stLFR reads based on paternal and maternal NGS reads.
 
 Options  :
-        --paternal    paternal NGS reads file in fastq format.
-                      ( note : gzip format IS NOT supported. )
-        --maternal    maternal NGS reads file in fastq format.
-                      ( note : gzip format IS NOT supported. )
-        --filial      filial stLFR reads file in fastq format.
-                      file in gzip format is accepted, but filename must end by ".gz".
-        --thread      threads num.
-                      [ optional, default 8 thread. ]
+        --paternal    paternal NGS reads file in FASTQ format.
+                      ( note : gzip format is NOT supported. )
+        --maternal    maternal NGS reads file in FASTQ format.
+                      ( note : gzip format is NOT supported. )
+        --filial      filial TGS reads file in FASTA format.
+                      file in gzip format can be accepted, but filename must end by ".gz".
+        --thread      thread num.
+                      [ optional, default 8 threads. ]
         --memory      x (GB) of memory to initial hash table by jellyfish.
-                      ( note: real memory used maybe greater than this. )
+                      ( note: real memory used may be greater than this. )
                       [ optional, default 20GB. ]
         --jellyfish   jellyfish path.
                       [ optional, default jellyfish. ]
         --mer         mer-size
                       [ optional, default 21. ]
-        --m-lower     maternal kmer count tablle will ignore mer with count < m-lower.
+        --m-lower     maternal kmer frequency table will ignore kmers with count < m-lower.
                       [ optional, default 9. ]
-        --m-upper     maternal kmer count tablle will ignore mer with count > m-upper.
+        --m-upper     maternal kmer frequency table will ignore kmers with count > m-upper.
                       [ optional, default 33. ]
-        --p-lower     paternal kmer count tablle will ignore mer with count < p-lower.
+        --p-lower     paternal kmer frequency table will ignore kmers with count < p-lower.
                       [ optional, default 9. ]
-        --p-upper     paternal kmer count tablle will ignore mer with count > p-upper.
+        --p-upper     paternal kmer frequency table will ignore kmers with count > p-upper.
                       [ optional, default 33. ]
-        --auto_bounds calcuate lower and upper bounds by kmercount table.
+        --auto_bounds automatically calcuate lower and upper bounds based on kmer analysis.
                       [ optional, default not trigger; no parameter. ]
-                      ( note : if auto_bounds is open, it will overwrite --*-lower and --*-upper  ]
+                      ( note : if auto_bounds is on, it will overwrite --*-lower and --*-upper  ]
         --help        print this usage message.
 
 Examples :
