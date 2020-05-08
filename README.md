@@ -47,12 +47,12 @@ Options  :
         --help        print this usage message.
 
 Examples :
-    ./HAST.sh --paternal father.fastq --maternal mater.fastq --filial son.fastq
+    ./HAST.sh --paternal father.fastq --maternal mother.fastq --filial son.fastq
 
-    ./HAST.sh --paternal father.fastq --maternal mater.fastq --filial son.r1.fastq --filial son.r2.fastq
+    ./HAST.sh --paternal father.fastq --maternal mother.fastq --filial son.r1.fastq --filial son.r2.fastq
 
-    ./HAST.sh --paternal father.fastq --maternal mater.fastq \
-                     --filial son.r1.fastq --memory 20 --thread 20 \
+    ./HAST.sh --paternal father.fastq --maternal mother.fastq \
+                     --filial son.r1.fastq --memory 50 --thread 20 \
                      --mer 21 --p-lower=9 --p-upper=33 --m-lower=9 --p-upper=33 \
                      --jellyfish /home/software/jellyfish/jellyfish-linux
 ```
