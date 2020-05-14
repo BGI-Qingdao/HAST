@@ -256,7 +256,8 @@ echo "phase reads ..."
 for x in $FILIAL
 do
     name=`basename $x`
-    if [[ ${name: -3} == ".gz" ]] ; then 
+    if [[ ${name: -3} == ".gz" ]] ; then
+        name=${name%%.gz}
         gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name
         gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name
         gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes - >"homozygous."$name
