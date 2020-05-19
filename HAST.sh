@@ -231,6 +231,11 @@ $JELLY dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' >mat
 # rm temporary files
 rm paternal_mixed.mer.fa paternal_mixed_mer_counts.js
 rm maternal_mixed.mer.fa maternal_mixed_mer_counts.js
+echo "final paternal unique kmer is : "
+wc -l paternal.unique.filter.mer
+echo "final maternal unique kmer is : "
+wc -l maternal.unique.filter.mer
+
 echo "extract unique mers done..."
 date
 ###############################################################################
@@ -245,9 +250,15 @@ $CLASSIFY --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
     --thread $CPU --weight1 1.04 $READ >phased.barcodes 2>phased.log
 
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
+echo "final paternal barcode :"
+wc -l paternal.unique.barcodes
 awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes
+echo "final maternal barcodes"
+wc -l maternal.unique.barcodes
 awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes
 echo "extract unique barcode done"
+echo "final homozygous barcodes"
+wc -l homozygous.unique.barcodes
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
