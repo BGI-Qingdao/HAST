@@ -130,7 +130,7 @@ do
     READ="$READ"" --read ""$x"
 done
 $CLASSIFY --hap0 $PATERNAL --hap1 $MATERNAL \
-    --thread $CPU --weight1 1.04 $READ --fotmat  >phased.barcodes 2>phased.log
+    --thread $CPU --weight1 1.04 $READ   >phased.barcodes 2>phased.log
 
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
 echo "final paternal barcode :"

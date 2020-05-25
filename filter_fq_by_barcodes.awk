@@ -23,5 +23,5 @@ BEGIN{
     }
 }
 END{
-    printf("use %d from %d\n",used,total); >>"filter_reads.log"
+    printf("use %d from %d\n",used,total) >>"filter_reads.log";
 }
