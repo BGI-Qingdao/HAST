@@ -11,9 +11,9 @@ function usage(){
     echo ""
     echo "Options  :"
     echo "        --paternal    paternal NGS reads file in fastq format."
-    echo "                      ( note : gzip format IS NOT supported. ) "
+    echo "                      file in gzip format is accepted, but filename must end by \".gz\"."
     echo "        --maternal    maternal NGS reads file in fastq format."
-    echo "                      ( note : gzip format IS NOT supported. ) "
+    echo "                      file in gzip format is accepted, but filename must end by \".gz\"."
     echo "        --filial      filial stLFR reads file in fastq format."
     echo "                      file in gzip format is accepted, but filename must end by \".gz\"."
     echo "        --thread      threads num."
@@ -44,6 +44,8 @@ function usage(){
     echo "        "
     echo "Examples :"
     echo "    ./HAST.sh --paternal father.fastq --maternal mater.fastq --filial son.fastq"
+    echo ""
+    echo "    ./HAST.sh --paternal father.1.fastq.gz --paternal father.2.fastq.gz --maternal maternal.fastq --filial son.fastq"
     echo ""
     echo "    ./HAST.sh --paternal father.fastq --maternal mater.fastq --filial son.r1.fastq --filial son.r2.fastq"
     echo ""
@@ -134,11 +136,11 @@ do
             AUTO_BOUNDS=1
             ;;
         "--paternal")
-            PATERNAL=$2
+            PATERNAL=$2" "$PATERNAL
             shift
             ;;
         "--maternal")
-            MATERNAL=$2
+            MATERNAL=$2" "$MATERNAL
             shift
             ;;
         "--filial")
@@ -204,14 +206,34 @@ echo "__START__"
 # count NGS reads
 echo "extract unique mers by jellyfish ..."
 if [[ ! -e "step_01_done" ]] ; then
-    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $MATERNAL || exit 1
+    IN=" "
+    for fname in $MATERNAL
+    do
+        if [[ ${fname: -3} == ".gz" ]] ; then
+            IN=$IN" < zcat $fname "
+        else 
+            IN=$IN" < cat $name "
+        fi
+    done
+    echo "for maternal : IN = $IN "
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $IN || exit 1
     date >>"step_01_done"
 else
     echo "skip kmer count of maternal because step_01_done file already exist ..."
 fi
 
 if [[ ! -e "step_02_done" ]] ; then
-    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL  || exit 1
+    IN=" "
+    for fname in $PATERNAL
+    do
+        if [[ ${fname: -3} == ".gz" ]] ; then
+            IN=$IN" < zcat $fname "
+        else 
+            IN=$IN" < cat $name "
+        fi
+    done
+    echo "for paternal : IN = $IN "
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $IN  || exit 1
     date >>"step_02_done"
 else
     echo "skip kmer count of paternal because step_02_done file already exist ..."
