@@ -105,4 +105,15 @@ Examples :
 
 3. run stlfr2supernova pipeline independently by https://github.com/BGI-Qingdao/stlfr2supernova_pipeline#start-stlfr-clean
 
+4. refine supernova assembly result by https://github.com/BGI-Qingdao/fabulous2.0
+
+# run HSAT for 10X Genomics Linked Reads 
+
+see https://github.com/BGI-Qingdao/HAST410GX
+
+# run HAST for TGS reads
+
+see https://github.com/BGI-Qingdao/HAST410GX
+
+____________________________
 Enjoy !
