@@ -12,19 +12,18 @@ make
 ## USAGE
 
 ```
-Usage    :
-    ./HAST.sh [OPTION]
+./HAST.sh [OPTION]
 
 Trio-phase filial stLFR reads based on paternal and maternal NGS reads.
 
 Options  :
-        --paternal    paternal NGS reads file in FASTQ format.
-                      ( note : gzip format is NOT supported. )
-        --maternal    maternal NGS reads file in FASTQ format.
-                      ( note : gzip format is NOT supported. )
-        --filial      filial TGS reads file in FASTA format.
+        --paternal    paternal NGS reads file in FASTA/FASTQ format.
                       file in gzip format can be accepted, but filename must end by ".gz".
-        --thread      thread num.
+        --maternal    maternal NGS reads file in FASTA/FASTQ format.
+                      file in gzip format can be accepted, but filename must end by ".gz".
+        --filial      filial stLFR reads file in FASTQ format.
+                      file in gzip format can be accepted, but filename must end by ".gz".
+        --thread      thread number.
                       [ optional, default 8 threads. ]
         --memory      x (GB) of memory to initial hash table by jellyfish.
                       ( note: real memory used may be greater than this. )
@@ -41,6 +40,10 @@ Options  :
                       [ optional, default 9. ]
         --p-upper     paternal kmer frequency table will ignore kmers with count > p-upper.
                       [ optional, default 33. ]
+        --adaptor_f   forward adaptor
+                      [ optional, default CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA. ]
+        --adaptor_r   reverse adaptor
+                      [ optional, default TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG. ]
         --auto_bounds automatically calcuate lower and upper bounds based on kmer analysis.
                       [ optional, default not trigger; no parameter. ]
                       ( note : if auto_bounds is on, it will overwrite --*-lower and --*-upper  ]
@@ -49,10 +52,12 @@ Options  :
 Examples :
     ./HAST.sh --paternal father.fastq --maternal mother.fastq --filial son.fastq
 
+    ./HAST.sh --paternal father.1.fastq.gz --paternal father.2.fastq.gz --maternal moter.fastq --filial son.fastq
+
     ./HAST.sh --paternal father.fastq --maternal mother.fastq --filial son.r1.fastq --filial son.r2.fastq
 
     ./HAST.sh --paternal father.fastq --maternal mother.fastq \
-                     --filial son.r1.fastq --memory 50 --thread 20 \
+                     --filial son.r1.fastq --memory 20 --thread 20 \
                      --mer 21 --p-lower=9 --p-upper=33 --m-lower=9 --p-upper=33 \
                      --jellyfish /home/software/jellyfish/jellyfish-linux
 ```
