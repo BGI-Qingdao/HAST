@@ -203,14 +203,41 @@ echo "__START__"
 ###############################################################################
 # count NGS reads
 echo "extract unique mers by jellyfish ..."
-$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $MATERNAL
-$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL
+if [[ ! -e "step_01_done" ]] ; then
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $MATERNAL || exit 1
+    date >>"step_01_done"
+else
+    echo "skip kmer count of maternal because step_01_done file already exist ..."
+fi
+
+if [[ ! -e "step_02_done" ]] ; then
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL  || exit 1
+    date >>"step_02_done"
+else
+    echo "skip kmer count of paternal because step_02_done file already exist ..."
+fi
 # dump all mers
-$JELLY dump maternal_mer_counts.jf            -o maternal.mer.fa
-$JELLY dump paternal_mer_counts.jf            -o paternal.mer.fa
+if [[ ! -e "step_03_done" ]] ; then
+    $JELLY dump maternal_mer_counts.jf            -o maternal.mer.fa                    || exit 1
+    date >>"step_03_done"
+else
+    echo "skip dump fa of maternal because step_03_done file already exist ..."
+fi
+
+if [[ ! -e "step_04_done" ]] ; then
+    $JELLY dump paternal_mer_counts.jf            -o paternal.mer.fa                    || exit 1
+    date >>"step_04_done"
+else
+    echo "skip dump fa of paternal because step_04_done file already exist ..."
+fi
 
 if [[ $AUTO_BOUNDS == 1 ]] ; then 
-    sh $ANALYSIS 
+    if  [[ ! -e "step_04.1_done" ]] ; then¬
+        sh $ANALYSIS  || exit 1
+        date >>"step_04.1_done"
+    else 
+        echo "skip kmer bounds analysis because step_04.1_done file already exist ..."
+    fi
     MLOWER=`grep LOWER_INDEX maternal.bounds.txt| awk -F '=' '{print $2}'`
     MUPPER=`grep UPPER_INDEX maternal.bounds.txt| awk -F '=' '{print $2}'`
     PLOWER=`grep LOWER_INDEX paternal.bounds.txt| awk -F '=' '{print $2}'`
@@ -219,32 +246,54 @@ fi
 echo "  the real used kmer-count bounds of maternal is [ $MLOWER , $MUPPER ] "
 echo "  the real used kmer-count bounds of paternal is [ $PLOWER , $PUPPER ] "
 # dump filter mers
-$JELLY dump -L $MLOWER -U $MUPPER maternal_mer_counts.jf -o maternal.mer.filter.fa
-$JELLY dump -L $PLOWER -U $PUPPER paternal_mer_counts.jf -o paternal.mer.filter.fa
+if [[ ! -e "step_05_done" ]] ; then
+    $JELLY dump -L $MLOWER -U $MUPPER maternal_mer_counts.jf -o maternal.mer.filter.fa || exit 1
+    date >>"step_05_done"
+else
+    echo "skip dump fa of maternal filter  because step_05_done file already exist ..."
+fi
+if [[ ! -e "step_06_done" ]] ; then
+    $JELLY dump -L $PLOWER -U $PUPPER paternal_mer_counts.jf -o paternal.mer.filter.fa || exit 1
+    date >>"step_06_done"
+else
+    echo "skip dump fa of paternal filter  because step_06_done file already exist ..."
+fi
 # rm temporary files
 rm maternal_mer_counts.jf paternal_mer_counts.jf
-# mix 1 copy of paternal mers and 2 copy of maternal mers
-cat maternal.mer.fa maternal.mer.fa paternal.mer.fa >mixed.fa
-# count p/maternal mixed mers
-$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o mixed_mer_counts.js mixed.fa
-# count==1 refer to paternal unique mers
-$JELLY dump -U 1 mixed_mer_counts.js          >paternal.mer.unique.fa
-# count==2 refer to maternal unique mers
-$JELLY dump -L 2 -U 2 mixed_mer_counts.js     >maternal.mer.unique.fa
-# rm temporary files
-rm mixed.fa mixed_mer_counts.js
-# mix unique mers and filter mers
-cat paternal.mer.unique.fa paternal.mer.filter.fa > paternal_mixed.mer.fa
-cat maternal.mer.unique.fa maternal.mer.filter.fa > maternal_mixed.mer.fa
-# count unique and filer mers
-$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o paternal_mixed_mer_counts.js paternal_mixed.mer.fa
-$JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o maternal_mixed_mer_counts.js maternal_mixed.mer.fa
-# extrat both unique and filter mers
-$JELLY dump -t -c -L 2 -U 2 paternal_mixed_mer_counts.js | awk '{print $1}' >paternal.unique.filter.mer
-$JELLY dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' >maternal.unique.filter.mer
-# rm temporary files
-rm paternal_mixed.mer.fa paternal_mixed_mer_counts.js
-rm maternal_mixed.mer.fa maternal_mixed_mer_counts.js
+if [[ ! -e "step_07_done" ]] ; then
+    # mix 1 copy of paternal mers and 2 copy of maternal mers
+    cat maternal.mer.fa maternal.mer.fa paternal.mer.fa >mixed.fa
+    # count p/maternal mixed mers
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o mixed_mer_counts.js mixed.fa || exit1
+    # count==1 refer to paternal unique mers
+    $JELLY dump -U 1 mixed_mer_counts.js          >paternal.mer.unique.fa  || exit 1
+    # count==2 refer to maternal unique mers 
+    $JELLY dump -L 2 -U 2 mixed_mer_counts.js     >maternal.mer.unique.fa || exit 1
+    # rm temporary files
+    rm mixed.fa mixed_mer_counts.js
+    date >>"step_07_done"
+else
+    echo "skip extract *aternal.mer.unique.fa  because step_07_done file already exist ..."
+fi
+
+if [[ ! -e "step_08_done" ]] ; then
+    # mix unique mers and filter mers
+    cat paternal.mer.unique.fa paternal.mer.filter.fa > paternal_mixed.mer.fa
+    cat maternal.mer.unique.fa maternal.mer.filter.fa > maternal_mixed.mer.fa
+    # count unique and filer mers
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o paternal_mixed_mer_counts.js paternal_mixed.mer.fa || exit 1
+    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o maternal_mixed_mer_counts.js maternal_mixed.mer.fa || exit 1
+    # extrat both unique and filter mers
+    $JELLY dump -t -c -L 2 -U 2 paternal_mixed_mer_counts.js | awk '{print $1}' >paternal.unique.filter.mer || exit 1
+    $JELLY dump -t -c -L 2 -U 2 maternal_mixed_mer_counts.js | awk '{print $1}' >maternal.unique.filter.mer || exit 1
+    # rm temporary files
+    rm paternal_mixed.mer.fa paternal_mixed_mer_counts.js
+    rm maternal_mixed.mer.fa maternal_mixed_mer_counts.js
+    date >>"step_08_done"
+else
+    echo "skip extract *aternal.unique.filter.mer  because step_08_done file already exist ..."
+fi
+
 echo "final paternal unique kmer is : "
 wc -l paternal.unique.filter.mer
 echo "final maternal unique kmer is : "
@@ -260,38 +309,57 @@ for x in $FILIAL
 do 
     READ="$READ"" --read ""$x"
 done
-$CLASSIFY --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
-    --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR >phased.barcodes 2>phased.log
 
-awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
-echo "final paternal barcode :"
-wc -l paternal.unique.barcodes
-awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes
-echo "final maternal barcodes"
-wc -l maternal.unique.barcodes
-awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes
-echo "extract unique barcode done"
-echo "final homozygous barcodes"
-wc -l homozygous.unique.barcodes
+if [[ ! -e "step_09_done" ]] ; then
+$CLASSIFY --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
+    --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR >phased.barcodes 2>phased.log || exit 1
+    date >>"step_09_done"
+else
+    echo "skip run classify  because step_09_done file already exist ..."
+fi
+
+if [[ ! -e "step_10_done" ]] ; then
+    awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes || exit 1
+    echo "final paternal barcode :"
+    wc -l paternal.unique.barcodes
+    awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes || exit 1
+    echo "final maternal barcodes"
+    wc -l maternal.unique.barcodes
+    awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes || exit 1
+    echo "extract unique barcode done"
+    echo "final homozygous barcodes"
+    wc -l homozygous.unique.barcodes
+    date >>"step_10_done"
+else
+    echo "skip extract barcode because step_10_done file already exist ..."
+fi
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
 date
 echo "phase reads ..."
-for x in $FILIAL
-do
-    name=`basename $x`
-    if [[ ${name: -3} == ".gz" ]] ; then
-        name=${name%%.gz}
-        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name
-        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name
-        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes - >"homozygous."$name
-    else 
-        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name
-        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name
-        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name
-    fi
-done
+
+if [[ ! -e "step_11_done" ]] ; then
+    for x in $FILIAL
+    do
+        name=`basename $x`
+        if [[ ${name: -3} == ".gz" ]] ; then
+            name=${name%%.gz}
+            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name &
+            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name &
+            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes - >"homozygous."$name &
+        else 
+            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name & 
+            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name & 
+            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name &
+        fi
+    done
+    date >>"step_11_done"
+else
+    echo "skip extract barcode because step_11_done file already exist ..."
+    echo "basically , this means nothing changed by this running ! "
+fi
+wait
 echo "phase reads done"
 date
 echo "__END__"
