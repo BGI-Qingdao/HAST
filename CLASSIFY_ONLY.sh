@@ -139,43 +139,60 @@ echo "__START__"
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
-echo "extract unique barcode by classify ..."
 for x in $FILIAL
 do 
     READ="$READ"" --read ""$x"
 done
-$CLASSIFY --hap0 $PATERNAL --hap1 $MATERNAL \
-    --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR   >phased.barcodes 2>phased.log
+if [[ ! -e "step_9_done" ]] ; then
+    echo "extract unique barcode by classify ..."
+    $CLASSIFY --hap0 $PATERNAL --hap1 $MATERNAL \
+        --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR   >phased.barcodes 2>phased.log || exit 1
+    date >>"step_9_done"
+else
+    echo "skip classify because step_9_done file already exist ..."
+fi
 
-awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
-echo "final paternal barcode :"
-wc -l paternal.unique.barcodes
-awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes
-echo "final maternal barcodes"
-wc -l maternal.unique.barcodes
-awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes
-echo "extract unique barcode done"
-echo "final homozygous barcodes"
-wc -l homozygous.unique.barcodes
+if [[ ! -e "step_10_done" ]] ; then
+    awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes || exit 1
+    echo "final paternal barcode :"
+    wc -l paternal.unique.barcodes
+    awk '{if($2 == 1) print $1;}' phased.barcodes >maternal.unique.barcodes || exit 1
+    echo "final maternal barcodes"
+    wc -l maternal.unique.barcodes
+    awk '{if($2 == "-1") print $1;}' phased.barcodes >homozygous.unique.barcodes || exit 1
+    echo "extract unique barcode done"
+    echo "final homozygous barcodes"
+    wc -l homozygous.unique.barcodes
+    date >>"step_10_done"
+else
+    echo "skip extract barcode because step_10_done file already exist ..."
+fi
 ###############################################################################
 # phase filial barcode based on unique and filter mers of paternal and maternal
 ###############################################################################
 date
 echo "phase reads ..."
-for x in $FILIAL
-do
-    name=`basename $x`
-    if [[ ${name: -3} == ".gz" ]] ; then
-        name=${name%%.gz}
-        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name
-        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name
-        gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes - >"homozygous."$name
-    else 
-        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name
-        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name
-        awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name
-    fi
-done
+if [[ ! -e "step_11_done" ]] ; then
+    for x in $FILIAL
+    do
+        name=`basename $x`
+        if [[ ${name: -3} == ".gz" ]] ; then
+            name=${name%%.gz}
+            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name &
+            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name &
+            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes - >"homozygous."$name &
+        else 
+            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name &
+            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name &
+            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name &
+        fi
+    done
+    date >>"step_11_done"
+else
+    echo "skip extract reads because step_11_done file already exist ..."
+    echo "basically , this means nothing changed by this running ! "
+fi
+wait
 echo "phase reads done"
 date
 echo "__END__"

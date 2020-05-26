@@ -356,7 +356,7 @@ if [[ ! -e "step_11_done" ]] ; then
     done
     date >>"step_11_done"
 else
-    echo "skip extract barcode because step_11_done file already exist ..."
+    echo "skip extract reads because step_11_done file already exist ..."
     echo "basically , this means nothing changed by this running ! "
 fi
 wait
