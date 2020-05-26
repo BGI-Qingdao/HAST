@@ -17,6 +17,10 @@ Options  :
                        file in gzip format can be accepted, but filename must end by ".gz".
         --thread       thread num.
                        [ optional, default 8 threads. ]
+        --adaptor_f   forward adaptor
+                      [ optional, default CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA. ]
+        --adaptor_r   reverse adaptor
+                      [ optional, default TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG. ]
         --help         print this usage message.
 
 Examples :
@@ -37,6 +41,9 @@ MATERNAL=""
 FILIAL=""
 FORMAT='fastq'
 SPATH=`dirname $0`
+AF='CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA'
+AR='TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG'
+
 ###############################################################################
 # parse arguments
 ###############################################################################
@@ -55,6 +62,14 @@ do
         "--help")
             usage
             exit 0
+            ;;
+        "--adaptor_r")
+            A_R=$2
+            shift
+            ;;
+        "--adaptor_f")
+            A_F=$2
+            shift
             ;;
         "--thread")
             CPU=$2
@@ -130,7 +145,7 @@ do
     READ="$READ"" --read ""$x"
 done
 $CLASSIFY --hap0 $PATERNAL --hap1 $MATERNAL \
-    --thread $CPU --weight1 1.04 $READ   >phased.barcodes 2>phased.log
+    --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR   >phased.barcodes 2>phased.log
 
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
 echo "final paternal barcode :"

@@ -278,14 +278,42 @@ void processFastq(const std::string & file,int t_num,BarcodeCache& data){
 }
 
 void printUsage(){
-    std::cerr<<"Uasge :\n\tclassify --hap0 hap0 --hap1 hap1 --read read1.fq [--read read2.fq] [--thread t_num (8 default) ] [--weight0 w0 (1.0 default) ] [--weight1 w1 (1.0 default) ] "<<std::endl;
-    std::cerr<<"output format: \n\tbarcode haplotype(0/1/-1) kmer_count_hap0 kmer_count_hap1"<<std::endl;
-    std::cerr<<"notice : --read accept file in gzip format , but file must end by \".gz\""<<std::endl;
+    std::cerr<<"\n\
+Uasge :\n\
+    classify --hap0 hap0 --hap1 hap1 --read read1.fq [options]\n\
+\n\
+Options:\n\
+        -h/--help                       print this uasge and exit.\n\
+        -p/--hap0                       unshared kmer set of hap0.\n\
+        -m/--hap1                       unshared kmer set of hap1.\n\
+        -r/--read                       filial reads in fastq format. gzip file must be ended by \".gz\".\n\
+        -t/--thread   (8 default)       thread number to used.\n\
+        -w/--weight0  (1.0 default)     weight of hap0.\n\
+        -u/--weight1  (1.0 default)     weight of hap1.\n\
+        -f/--adaptor_f                  forward adaptor sequence.\n\
+                                        default \"CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA\"\n\
+        -q/--adaptor_r                  reverse adaptor sequence.\n\
+                                        default \"TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG\"\n\
+\n\
+Examples:\n\
+    ./classify --hap0 p.kmers --hap1 m.kmers --read input.fastq.gz\n\
+\n\
+    ./classify --hap0 p.kmers --hap1 m.kmers --read input.L01.fastq.gz --read input.L02.fastq.gz\n\
+\n\
+    ./classify --hap0 p.kmers --hap1 m.kmers --read input.L01.fastq.gz --read input.L02.fastq.gz -t 24 --weight1 1.04 -f CTGTCTCTTATACACATCTTAGGAAGACAA -q TCTGCTGAGTCGAGAACGTCTCTG\n\
+\n\
+Output format:\n\
+barcode\thaplotype(0/1/-1)\tkmer_count_hap0\tkmer_count_hap1\n\
+\n\
+Usage done.\n\
+";
 }
 
+std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA");
+std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG");
 void InitAdaptor(){
-    std::string r1("CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA");
-    std::string r2("TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG");
+    std::cerr<<"Adaptor forward :"<<r1<<std::endl;
+    std::cerr<<"Adaptor reverse :"<<r2<<std::endl;
     std::vector<Kmer> kmers = Kmer::chopRead2Kmer(BaseStr::str2BaseStr(r1));
     for(int i = 0 ; i <(int)kmers.size();i++){
         if( g_kmers[0].find(kmers.at(i)) != g_kmers[0].end() ){
@@ -351,10 +379,12 @@ int main(int argc ,char ** argv ){
         {"thread",required_argument, NULL, 't'},
         {"weight0",required_argument, NULL, 'w'},
         {"weight1",required_argument, NULL, 'u'},
+        {"adaptor_f",required_argument, NULL, 'f'},
+        {"adaptor_r",required_argument, NULL, 'q'},
         {"help",  no_argument,       NULL, 'h'},
         {0, 0, 0, 0}
     };
-    static char optstring[] = "p:m:l:r:t:w:u:h";
+    static char optstring[] = "p:m:l:r:t:w:u:f:q:h";
     std::string hap0 , hap1 ;
     std::vector<std::string> read;
     int t_num=8;
@@ -362,6 +392,12 @@ int main(int argc ,char ** argv ){
         int c = getopt_long(argc, argv, optstring, long_options, NULL);
         if (c<0) break;
         switch (c){
+            case 'f':
+                r1 = std::string(optarg);
+                break;
+            case 'q':
+                r2 = std::string(optarg);
+                break;
             case 'p':
                 hap0 = std::string(optarg);
                 break;

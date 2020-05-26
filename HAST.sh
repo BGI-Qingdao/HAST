@@ -33,6 +33,10 @@ function usage(){
     echo "                      [ optional, default 9. ]"
     echo "        --p-upper     paternal kmer count tablle will ignore mer with count > p-upper."
     echo "                      [ optional, default 33. ]"
+    echo "        --adaptor_f   forward adaptor"
+    echo "                      [ optional, default CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA. ]"
+    echo "        --adaptor_r   reverse adaptor"
+    echo "                      [ optional, default TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG. ]"
     echo "        --auto_bounds calcuate lower and upper bounds by kmercount table."
     echo "                      [ optional, default not trigger; no parameter. ]"
     echo "                      ( note : if auto_bounds is open, it will overwrite --*-lower and --*-upper  ]"
@@ -65,6 +69,8 @@ MATERNAL=""
 FILIAL=""
 AUTO_BOUNDS=0
 SPATH=`dirname $0`
+AF='CTGTCTCTTATACACATCTTAGGAAGACAAGCACTGACGACATGA'
+AR='TCTGCTGAGTCGAGAACGTCTCTGTGAGCCAAGGAGTTGCTCTGG'
 ###############################################################################
 # parse arguments
 ###############################################################################
@@ -83,6 +89,14 @@ do
         "--help")
             usage
             exit 0
+            ;;
+        "--adaptor_r")
+            A_R=$2
+            shift
+            ;;
+        "--adaptor_f")
+            A_F=$2
+            shift
             ;;
         "--jellyfish")
             JELLY=$2
@@ -247,7 +261,7 @@ do
     READ="$READ"" --read ""$x"
 done
 $CLASSIFY --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
-    --thread $CPU --weight1 1.04 $READ >phased.barcodes 2>phased.log
+    --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR >phased.barcodes 2>phased.log
 
 awk '{if($2 == 0) print $1;}' phased.barcodes >paternal.unique.barcodes
 echo "final paternal barcode :"
