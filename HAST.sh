@@ -212,7 +212,7 @@ if [[ ! -e "step_01_done" ]] ; then
         if [[ ${fname: -3} == ".gz" ]] ; then
             IN=$IN" < zcat $fname "
         else 
-            IN=$IN" < cat $name "
+            IN=$IN" < cat $fname "
         fi
     done
     echo "for maternal : IN = $IN "
@@ -229,7 +229,7 @@ if [[ ! -e "step_02_done" ]] ; then
         if [[ ${fname: -3} == ".gz" ]] ; then
             IN=$IN" < zcat $fname "
         else 
-            IN=$IN" < cat $name "
+            IN=$IN" < cat $fname "
         fi
     done
     echo "for paternal : IN = $IN "
