@@ -281,7 +281,7 @@ else
 fi
 
 if [[ $AUTO_BOUNDS == 1 ]] ; then
-    if  [[ ! -e "step_04.1_done" ]] ; then¬
+    if  [[ ! -e "step_04.1_done" ]] ; then
         sh $ANALYSIS  || exit 1
         date >>"step_04.1_done"
     else 
