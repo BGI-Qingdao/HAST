@@ -113,7 +113,7 @@ see https://github.com/BGI-Qingdao/HAST410GX
 
 # run HAST for TGS reads
 
-see https://github.com/BGI-Qingdao/HAST410GX
+see https://github.com/BGI-Qingdao/HAST4TGS
 
 ____________________________
 Enjoy !
