@@ -206,38 +206,65 @@ echo "__START__"
 # count NGS reads
 echo "extract unique mers by jellyfish ..."
 if [[ ! -e "step_01_done" ]] ; then
-    IN=" "
+    gz=0
     for fname in $MATERNAL
     do
-        if [[ ${fname: -3} == ".gz" ]] ; then
-            IN=$IN" < zcat $fname "
-        else 
-            IN=$IN" < cat $fname "
+        if [[ ${fname: -3} == ".gz"  ]] ; then
+            if [[ $gz == 0 || $gz == 2 ]] ; then
+                gz=2
+            else
+                echo "ERROR : please don't mixed gz input with non-gz input."
+                exit 1;
+            fi
+        else
+            if [[ $gz == 1 || $gz == 0 ]] ; then
+                gz=1
+            else
+                echo "ERROR : please don't mixed gz input with non-gz input;"
+                exit 1;
+            fi
         fi
     done
-    echo "for maternal : IN = $IN "
-    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf $IN || exit 1
+    if [[ $gz == 2 ]] ; then
+        zcat $MATERNAL | $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf /dev/fd/0 || exit 1
+    else
+        $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  maternal_mer_counts.jf  $MATERNAL || exit 1
+    fi
     date >>"step_01_done"
 else
     echo "skip kmer count of maternal because step_01_done file already exist ..."
 fi
 
 if [[ ! -e "step_02_done" ]] ; then
-    IN=" "
+    gz=0
     for fname in $PATERNAL
     do
-        if [[ ${fname: -3} == ".gz" ]] ; then
-            IN=$IN" < zcat $fname "
-        else 
-            IN=$IN" < cat $fname "
+        if [[ ${fname: -3} == ".gz"  ]] ; then
+            if [[ $gz == 0 || $gz == 2 ]] ; then
+                gz=2
+            else
+                echo "ERROR : please don't mixed gz input with non-gz input."
+                exit 1;
+            fi
+        else
+            if [[ $gz == 1 || $gz == 0 ]] ; then
+                gz=1
+            else
+                echo "ERROR : please don't mixed gz input with non-gz input;"
+                exit 1;
+            fi
         fi
     done
-    echo "for paternal : IN = $IN "
-    $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $IN  || exit 1
+    if [[ $gz == 2 ]] ; then
+        zcat $PATERNAL | $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf /dev/fd/0  || exit 1
+    else
+        $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o  paternal_mer_counts.jf $PATERNAL || exit 1
+    fi
     date >>"step_02_done"
 else
     echo "skip kmer count of paternal because step_02_done file already exist ..."
 fi
+
 # dump all mers
 if [[ ! -e "step_03_done" ]] ; then
     $JELLY dump maternal_mer_counts.jf            -o maternal.mer.fa                    || exit 1
@@ -253,7 +280,7 @@ else
     echo "skip dump fa of paternal because step_04_done file already exist ..."
 fi
 
-if [[ $AUTO_BOUNDS == 1 ]] ; then 
+if [[ $AUTO_BOUNDS == 1 ]] ; then
     if  [[ ! -e "step_04.1_done" ]] ; then¬
         sh $ANALYSIS  || exit 1
         date >>"step_04.1_done"
