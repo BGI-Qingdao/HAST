@@ -9,6 +9,8 @@ cd HAST
 make
 ```
 
+or try the binary release https://github.com/BGI-Qingdao/HAST/releases/download/v1.0.0/HAST_release_v1.0.0_with_jellyfish.tar.gz
+
 ## USAGE
 
 ```
