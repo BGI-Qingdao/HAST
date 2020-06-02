@@ -171,7 +171,6 @@ echo "    auto_bounds    : $AUTO_BOUNDS"
 echo "HAST.sh in dir  : $SPATH"
 
 CLASSIFY=$SPATH"/classify"
-FILTER_FQ_BY_BARCODES_AWK=$SPATH"/filter_fq_by_barcodes.awk"
 QUARTERING_FASTQ=$SPATH"/quartering_fastq.awk"
 ANALYSIS=$SPATH"/analysis_kmercount.sh"
 
@@ -309,7 +308,7 @@ else
     echo "skip dump fa of paternal filter  because step_06_done file already exist ..."
 fi
 # rm temporary files
-rm maternal_mer_counts.jf paternal_mer_counts.jf
+rm -f maternal_mer_counts.jf paternal_mer_counts.jf
 if [[ ! -e "step_07_done" ]] ; then
     # mix 1 copy of paternal mers and 2 copy of maternal mers and count p/maternal mixed mers
     $JELLY count -m $MER -s $MEMORY"G" -t $CPU -C -o mixed_mer_counts.js  maternal.mer.fa maternal.mer.fa paternal.mer.fa  || exit 1
@@ -390,9 +389,9 @@ if [[ ! -e "step_11_done" ]] ; then
         name=`basename $x`
         if [[ ${name: -3} == ".gz" ]] ; then
             name=${name%%.gz}
-            gzip -dc $x | awk -v  prefix=$name -F '#|/' -f $QUARTERING_FASTQ paternal.unique.barcodes paternal.unique.bacodes homozygous.unique.barcodes  -
+            gzip -dc $x | awk -v  prefix=$name -F '#|/' -f $QUARTERING_FASTQ paternal.unique.barcodes maternal.unique.barcodes homozygous.unique.barcodes  - || exit 1
         else
-            awk -v  prefix=$name -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes paternal.unique.bacodes homozygous.unique.barcodes $x
+            awk -v  prefix=$name -F '#|/' -f $QUARTERING_FASTQ paternal.unique.barcodes maternal.unique.barcodes homozygous.unique.barcodes $x || exit 1
         fi
     done
     date >>"step_11_done"
