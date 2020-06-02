@@ -108,7 +108,7 @@ echo "    thread         : $CPU "
 echo "CLASSIFY_ONLY.sh in dir  : $SPATH"
 
 CLASSIFY=$SPATH"/classify"
-FILTER_FQ_BY_BARCODES_AWK=$SPATH"/filter_fq_by_barcodes.awk"
+QUARTERING_FASTQ=$SPATH"/quartering_fastq.awk"
 
 # sanity check
 if [[ $CPU -lt 1 || -z $PATERNAL || -z $MATERNAL || -z $FILIAL ]] ; then
@@ -123,8 +123,8 @@ if [[ ! -e $CLASSIFY ]] ; then
     echo "ERROR : please run \"make\" command in $SPATH before using this script! exit..."
     exit 1
 fi
-if [[ ! -e $FILTER_FQ_BY_BARCODES_AWK ]] ; then
-    echo "ERROR : \"$FILTER_FQ_BY_BARCODES_AWK\"  is missing. please download it from github. exit..."
+if [[ ! -e $QUARTERING_FASTQ ]] ; then
+    echo "ERROR : \"$QUARTERING_FASTQ\"  is missing. please download it from github. exit..."
     exit 1
 fi
 for x in $MATERNAL $PATERNAL $FILIAL
@@ -178,13 +178,9 @@ if [[ ! -e "step_11_done" ]] ; then
         name=`basename $x`
         if [[ ${name: -3} == ".gz" ]] ; then
             name=${name%%.gz}
-            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK maternal.unique.barcodes - >"maternal."$name &
-            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK paternal.unique.barcodes - >"paternal."$name &
-            gzip -dc $x | awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK homozygous.unique.barcodes - >"homozygous."$name &
-        else 
-            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  maternal.unique.barcodes $x >"maternal."$name &
-            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  paternal.unique.barcodes $x >"paternal."$name &
-            awk  -F '#|/' -f $FILTER_FQ_BY_BARCODES_AWK  homozygous.unique.barcodes $x >"homozygous."$name &
+            gzip -dc $x | awk -v  prefix=$name -F '#|/' -f $QUARTERING_FASTQ paternal.unique.barcodes maternal.unique.barcodes homozygous.unique.barcodes  - || exit 1
+        else
+            awk -v  prefix=$name -F '#|/' -f $QUARTERING_FASTQ paternal.unique.barcodes maternal.unique.barcodes homozygous.unique.barcodes $x || exit 1
         fi
     done
     date >>"step_11_done"
