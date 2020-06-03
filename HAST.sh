@@ -356,7 +356,7 @@ done
 
 if [[ ! -e "step_09_done" ]] ; then
 $CLASSIFY --hap0 paternal.unique.filter.mer --hap1 maternal.unique.filter.mer \
-    --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR >phased.barcodes 2>phased.log || exit 1
+    --thread $CPU --weight0 1.04 $READ --adaptor_f $AF --adaptor_r $AR >phased.barcodes 2>phased.log || exit 1
     date >>"step_09_done"
 else
     echo "skip run classify  because step_09_done file already exist ..."
