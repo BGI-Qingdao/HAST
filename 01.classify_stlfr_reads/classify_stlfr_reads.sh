@@ -6,7 +6,7 @@
 function usage(){
 echo """
 Usage    :
-    ./CLASSIFY_ONLY.sh [OPTION]
+    ./classify_stlfr_reads.sh [OPTION]
 
 Trio phase TGS reads use exist kmer datasets.
 
@@ -24,11 +24,11 @@ Options  :
         --help         print this usage message.
 
 Examples :
-    ./CLASSIFY_ONLY.sh --paternal_mer father.mers --maternal_mer mater.mers --filial son.fastq
+    ./classify_stlfr_reads.sh --paternal_mer father.mers --maternal_mer mater.mers --filial son.fastq
 
-    ./CLASSIFY_ONLY.sh --paternal_mer father.mers --maternal_mer mater.mers --filial son.fastq --filial son2.fastq
+    ./classify_stlfr_reads.sh --paternal_mer father.mers --maternal_mer mater.mers --filial son.fastq --filial son2.fastq
 
-    ./CLASSIFY_ONLY.sh --paternal_mer father.mers --maternal_mer mater.mers --filial son.fastq --thread 20
+    ./classify_stlfr_reads.sh --paternal_mer father.mers --maternal_mer mater.mers --filial son.fastq --thread 20
 """
 }
 
