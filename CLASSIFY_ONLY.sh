@@ -146,7 +146,7 @@ done
 if [[ ! -e "step_9_done" ]] ; then
     echo "extract unique barcode by classify ..."
     $CLASSIFY --hap0 $PATERNAL --hap1 $MATERNAL \
-        --thread $CPU --weight1 1.04 $READ --adaptor_f $AF --adaptor_r $AR   >phased.barcodes 2>phased.log || exit 1
+        --thread $CPU --weight0 1.04 $READ --adaptor_f $AF --adaptor_r $AR   >phased.barcodes 2>phased.log || exit 1
     date >>"step_9_done"
 else
     echo "skip classify because step_9_done file already exist ..."
