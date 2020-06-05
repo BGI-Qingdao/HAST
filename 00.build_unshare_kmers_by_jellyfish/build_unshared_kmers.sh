@@ -32,6 +32,7 @@ function usage(){
     echo "        --auto_bounds automatically calcuate lower and upper bounds based on kmer analysis."
     echo "                      [ optional, default not trigger; no parameter. ]"
     echo "                      ( note : if auto_bounds is on, it will overwrite --*-lower and --*-upper  ]"
+    echo "                      ( !!! WARN : default bounds is seted for 30X WGS reads , if your data is not close to 30X, please use your own bounds or simply open auto_bounds !!! ) "
     echo "        --help        print this usage message."
 }
 
