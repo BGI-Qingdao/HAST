@@ -145,6 +145,12 @@ $SCRIPT_PATH/fake_10x.pl  split_reads.1.fq.gz split_reads.2.fq.gz merge.txt >fak
 # assembly by supernova
 $SUPERNOVA run --id=haplotype --maxreads='all' --accept-extreme-coverage --fastqs=./ --localcores=$THREADS --localmem=$MEMORY --nopreflight >supernova_run.log 2>supernova_run.err || exit 1
 
+# output supernova pse2
 $SUPERNOVA mkoutput --style=pseudohap2 --index --headers=full \
                 --minsize=200 --asmdir=haplotype/outs/assembly/ \
                 --outprefix=$OUTPUT > output.pshap2.log  2>&1
+
+gunzip ${OUTPUT}.1.fasta.gz
+gunzip ${OUTPUT}.2.fasta.gz
+
+echo "DONE ."

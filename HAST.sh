@@ -59,14 +59,20 @@ cd ..
 # step 03 : assembly by supernova
 mkdir '03.maternal_output'
 cd '03.maternal_output'
-$STEP3 '../02.maternal_assembly' ../paternal.unique.filter.mer ../maternal.unique.filter.mer > log 2>err
+$STEP3 --supernova_path '../02.maternal_assembly' \
+       --paternal_mer ../paternal.unique.filter.mer \
+       --maternal_mer ../maternal.unique.filter.mer \
+       --prefix output > log 2>err
 cd ..
 
 mkdir '03.paternal_output'
 cd '03.paternal_output'
-$STEP3 '../02.paternal_assembly' ../paternal.unique.filter.mer ../maternal.unique.filter.mer >log 2>err
+$STEP3 --supernova_path '../02.paternal_assembly' \
+       --paternal_mer ../paternal.unique.filter.mer \
+       --maternal_mer ../maternal.unique.filter.mer \
+       --prefix output > log 2>err
 cd ..
 
 echo 'All done'
-echo 'Final result is : 03.maternal_output/output.phb2.fa and  03.paternal_output/output.phb1.fa'
+echo 'Final result is : 03.maternal_output/output.mather.fa and  03.paternal_output/output.father.fa'
 echo "Bye"

@@ -1,43 +1,105 @@
 #!/bin/bash
-#
+
+function usage() {
+    echo """
+Usage   :
+            mkoutput_by_fabulous2.0.sh <options>
+
+Options :
+            -h/--help           print this usage and exit;
+            --assembly_path     supernova assembly path ; 
+            --prefix            prefix of input & output files ;
+                                please keep the prefix with assembly_by_supernova.sh ;
+            --paternal_mer      paternal kmers ;
+            --maternal_mer      maternal kmers ;
+            --thread            max threads ;
+
+Example :
+
+./mkoutput_by_fabulous2.0.sh --assembly_path supernova_asmfolder \\¬
+                                           --prefix  output \\¬
+                                           --paternal_mer paternal.unique.filter.mer \\
+                                           --maternal_mer maternal.unique.filter.mer
+"""
+}
+
+
 # WARN      :
 #               this is only a temporary script as example.
 #               change below variables as you wish.
 CPU=30
+SUPERNOVA_OUTPUT_DIR=""
+PATERNAL_KMERS=""
+MATERNAL_KMERS=""
+PREFIX="output"
 
-# step 0. check parameters or print usage
-if [[ $# != 3 ]] ; then 
-    echo """Usage     :
-            ./example.sh  dir-to-supernova-outs paternal.kmers maternal.kmers
-Example   :
-            ./example.sh  /home/project/supernova_test/human paternal.kmers maternal.kmers
-    """
-    exit 1
+if [[ $# == 0 ]] ; then 
+    usage
+    exit 0
 fi
+echo "CMD :$0 $*"
+while [[ $# > 0 ]] 
+do
+    case $1 in
+        "-h")
+            usage
+            exit 0
+            ;;
+        "--help")
+            usage
+            exit 0
+            ;;
+        "--supernova")
+            SUPERNOVA_OUTPUT_DIR=$2
+            shift
+            ;;
+        "--prefix")
+            PREFIX=$2
+            shift
+            ;;
+        "--paternal_mer")
+            PATERNAL_KMERS=$2
+            shift
+            ;;
+        "--thread")
+            CPU=$2
+            shift
+            ;;
+        "--maternal_mer")
+            MATERNAL_KMERS=$2
+            shift
+            ;;
+        *)
+            echo "invalid params : \"$1\" . exit ... "
+            exit
+        ;;
+    esac
+    shift
+done
 
 SCRIPT_PATH=`dirname $0`
 WORKING_PATH=`pwd`
-SUPERNOVA_OUTPUT_DIR=$1
-PATERNAL_KMERS=$2
-MATERNAL_KMERS=$3
 echo "LOG  : use scripts from $SCRIPT_PATH"
 echo "LOG  : working dir $WORKING_PATH"
 echo "LOG  : input supernova result in $SUPERNOVA_OUTPUT_DIR"
 echo "LOG  : paternal kmers file is $PATERNAL_KMERS"
 echo "LOG  : maternal kmers file is $MATERNAL_KMERS"
-echo "WARN : please guarantee supernova is usable"
+echo "LOG  : prefix is $PREFIX"
 date
 
-PREFIX='output'
-cp $SUPERNOVA_OUTPUT_DIR/output* ./
-
-# output supernova pse2
-gunzip ${PREFIX}.1.fasta.gz
-gunzip ${PREFIX}.2.fasta.gz
+if [[ ! -e $SUPERNOVA_OUTPUT_DIR/$PREFIX.1.fasta || \
+      ! -e $SUPERNOVA_OUTPUT_DIR/$PREFIX.2.fasta || \
+      ! -e $SUPERNOVA_OUTPUT_DIR/$PREFIX.1.idx || \
+      ! -e $SUPERNOVA_OUTPUT_DIR/$PREFIX.2.idx ]] ; then 
+    echo "$SUPERNOVA_OUTPUT_DIR is not a valid path . exit ..."
+    exit 1 ;
+fi
 
 # split hap1,hap2 from bubbles
-$SCRIPT_PATH/bin/Split --fa_1 ${PREFIX}.1.fasta --fa_2 ${PREFIX}.2.fasta \
-                       --idx_1 ${PREFIX}.1.idx  --idx_2 ${PREFIX}.2.idx  \
+$SCRIPT_PATH/bin/Split --fa_1 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.1.fasta \
+                       --fa_2 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.2.fasta \
+                       --idx_1 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.1.idx \
+                       --idx_2 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.2.idx  \
                        --parefix ${PREFIX}
 
 # haplotype bubbles based on paternal unique kmers
@@ -56,10 +118,8 @@ $SCRIPT_PATH/bin/MergePhaseResult  --prefix ${PREFIX}  \
               --mother_ids ${PREFIX}.phb.12.mother.idx \
               --homo_ids ${PREFIX}.phb.12.ambiguous.idx
 
-$SCRIPT_PATH/bin/GenSq --prefix ${PREFIX} ${PREFIX}.homo.fa \
-                      ${PREFIX}.phb.1.fa ${PREFIX}.phb.2.fa \
-                      ${PREFIX}.merge.father.ids \
-                      ${PREFIX}.merge.mother.ids
+# generate final fasta sequence
+$SCRIPT_PATH/bin/GenSq --prefix ${PREFIX} 
 
 echo "LOG  : ALL DONE"
-echo "LOG  : final output is ${PREFIX}.phb.1.fa and ${PREFIX}.phb.2.fa"
+echo "LOG  : final output is ${PREFIX}.father.fa and ${PREFIX}.mather.fa"
