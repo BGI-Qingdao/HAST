@@ -1,14 +1,10 @@
-.PHONY: all tool clean
 
-all: classify tool 
+.PHONY:all clean
 
-classify : classify.cpp gzstream/gzstream.C gzstream/gzstream.h kmer/kmer.h
-	g++ -c -g  gzstream/gzstream.C -I./gzstream -lz -o gzstream.o
-	g++ -g -std=c++11  classify.cpp gzstream.o -lz -lpthread -o classify
-	#g++ -g -std=c++11 -static classify.cpp gzstream.o -lz -lpthread -o classify
+all:
+	cd 01.classify_stlfr_reads && make && cd ../
+	cd 03.mkoutput_by_fabulous2.0/src_main && make && cd ../../
 
-tool :
-	cd tool && make
-
-clean :
-	rm classify tool/mergeResult
+clean:
+	cd 01.classify_stlfr_reads && make clean && cd ../
+	cd 03.mkoutput_by_fabulous2.0/src_main && make clean && cd ../../
