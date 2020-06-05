@@ -42,6 +42,7 @@ $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.maternal.fastq \
                                    --read1 ../*1*.nobarcode.fastq \
                                    --read2 ../*2*.maternal.fastq \
                                    --read2 ../*2*.nobarcode.fastq \
+                                   --prefix output \
                                    >log 2>err
 cd ..
 
@@ -51,6 +52,7 @@ $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
                                    --read1 ../*1*.nobarcode.fastq \
                                    --read2 ../*2*.paternal.fastq \
                                    --read2 ../*2*.nobarcode.fastq \
+                                   --prefix output \
                                    >log 2>err
 cd ..
 

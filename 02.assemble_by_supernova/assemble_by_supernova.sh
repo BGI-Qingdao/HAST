@@ -12,7 +12,8 @@ Options :
                 --read2             read2 fastq;
                 --cpu               max threads to used by supernova;
                 --memory            max memory(G) to used by supernova;
-                --min_rp            minimax accept read-pair per barcode; barcode with read pair less-than min_rp will be ignored.
+                --min_rp            minimax accept read-pair per barcode; barcode with read pair less-than min_rp will be ignored;
+                --prefix            prefix of output files;
 
 Example :
             ./assemble_by_supernova.sh --supernova /home/software/supernova \\
@@ -39,6 +40,7 @@ Example :
 MIN_READPAIR_IN_BARCODE=1
 THREADS=30
 MEMORY=800
+OUTPUT="output"
 READ1=""
 READ2=""
 ###############################################################################
@@ -62,6 +64,10 @@ do
             ;;
         "--supernova")
             SUPERNOVA_PATH=$2
+            shift
+            ;;
+        "--prefix")
+            OUTPUT=$2
             shift
             ;;
         "--memory")
@@ -141,4 +147,4 @@ $SUPERNOVA run --id=haplotype --maxreads='all' --accept-extreme-coverage --fastq
 
 $SUPERNOVA mkoutput --style=pseudohap2 --index --headers=full \
                 --minsize=200 --asmdir=haplotype/outs/assembly/ \
-                --outprefix=output > output.pshap2.log  2>&1
+                --outprefix=$OUTPUT > output.pshap2.log  2>&1
