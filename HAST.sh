@@ -34,15 +34,24 @@ mv '01.classify_reads/*.maternal.fastq' ./
 mv '00.build_kmers/*.homozygote.fastq' ./
 mv '00.build_kmers/*.nobarcode.fastq' ./
 
+
 # step 02 : assembly by supernova
 mkdir '02.maternal_assembly'
 cd '02.maternal_assembly'
-$STEP2 $SUPERNOVA_PATH ../*.maternal.fastq ../*.nobarcode.fastq >log 2>err
+$STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.maternal.fastq \
+                                   --read1 ../*1*.nobarcode.fastq \
+                                   --read2 ../*2*.maternal.fastq \
+                                   --read2 ../*2*.nobarcode.fastq \
+                                   >log 2>err
 cd ..
 
 mkdir '02.paternal_assembly'
 cd '02.paternal_assembly'
-$STEP3 $SUPERNOVA_PATH ../*.paternal.fastq ../*.nobarcode.fastq >log 2>err
+$STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
+                                   --read1 ../*1*.nobarcode.fastq \
+                                   --read2 ../*2*.paternal.fastq \
+                                   --read2 ../*2*.nobarcode.fastq \
+                                   >log 2>err
 cd ..
 
 # step 03 : assembly by supernova
