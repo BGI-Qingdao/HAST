@@ -98,7 +98,7 @@ do
     shift
 done
 
-SUPERNOVA_WL=$SUPERNOVA_PATH/supernova-cs/*/tenkit/lib/python/tenkit/barcodes/4M-with-alts-february-2016.txt
+SUPERNOVA_WL=`ls $SUPERNOVA_PATH/supernova-cs/*/tenkit/lib/python/tenkit/barcodes/4M-with-alts-february-2016.txt`
 SUPERNOVA=$SUPERNOVA_PATH/supernova
 SCRIPT_PATH=`dirname $0`
 
@@ -108,13 +108,13 @@ echo "INFO  : all read2 files : $READ2"
 echo "INFO  : max threads     : $CPU"
 echo "INFO  : max memory      : $MEMORY"
 
-if [[ ! -e SUPERNOVA_WL ]] ; then 
+if [[ ! -e $SUPERNOVA_WL ]] ; then
     echo "supernova in not valid in $SUPERNOVA_PATH !!! ";
     echo "exit ..."
     exit 1;
 fi
 
-if [[ ! -e SUPERNOVA ]] ; then 
+if [[ ! -e $SUPERNOVA ]] ; then 
     echo "supernova in not valid in $SUPERNOVA_PATH !!! ";
     echo "exit ..."
     exit 1;
