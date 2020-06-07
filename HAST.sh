@@ -148,38 +148,33 @@ $STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
        --auto_bounds  --thread $CPU >00.build_kmers.log \
        2>00.build_kmers.err
 cd ..
-mv '00.build_kmers/paternal.unique.filter.mer' ./
-mv '00.build_kmers/maternal.unique.filter.mer' ./
 
 # step 01 : classify filial stLFR reads
 
 mkdir -p '01.classify_reads'
 cd '01.classify_reads' 
 echo """
-$STEP1 --paternal_mer ../paternal.unique.filter.mer \
-                      --maternal_mer ../maternal.unique.filter.mer \
+$STEP1 --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
+       --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
                       --filial " $C1 " \
                       --filial " $C2 " >01.classify_reads.log \
                       2>01.classify_reads.err
 """
-$STEP1 --paternal_mer ../paternal.unique.filter.mer \
-                      --maternal_mer ../maternal.unique.filter.mer \
+$STEP1 --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
+       --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
+                      --maternal_mer \
                       --filial " $C1 " \
                       --filial " $C2 " >01.classify_reads.log \
                       2>01.classify_reads.err
 cd ..
-mv 01.classify_reads/*.paternal.fastq   ./
-mv 01.classify_reads/*.maternal.fastq   ./
-mv 01.classify_reads/*.homozygote.fastq ./
-mv 01.classify_reads/*.nobarcode.fastq  ./
 
 # step 02 : assembly by supernova
 mkdir -p '02.maternal_assembly'
 cd '02.maternal_assembly'
-r1m=`ls ../*r1*.maternal.fastq`
-r1h=`ls ../*r1*.homozygote.fastq`
-r2m=`ls ../*r2*.maternal.fastq`
-r2h=`ls ../*r2*.homozygote.fastq`
+r1m=`ls ../01.classify_reads/*r1*.maternal.fastq`
+r1h=`ls ../01.classify_reads/*r1*.homozygote.fastq`
+r2m=`ls ../01.classify_reads/*r2*.maternal.fastq`
+r2h=`ls ../01.classify_reads/*r2*.homozygote.fastq`
 echo """
 $STEP2 --supernova $SUPERNOVA      --read1 " $r1m " \
                                    --read1 " $r1h " \
@@ -201,10 +196,10 @@ cd ..
 
 mkdir -p '02.paternal_assembly'
 cd '02.paternal_assembly'
-r1p=`ls ../*r1*.paternal.fastq`
-r1h=`ls ../*r1*.homozygote.fastq`
-r2p=`ls ../*r2*.paternal.fastq`
-r2h=`ls ../*r2*.homozygote.fastq`
+r1p=`ls ../01.classify_reads/*r1*.paternal.fastq`
+r1h=`ls ../01.classify_reads/*r1*.homozygote.fastq`
+r2p=`ls ../01.classify_reads/*r2*.paternal.fastq`
+r2h=`ls ../01.classify_reads/*r2*.homozygote.fastq`
 echo """
 $STEP2 --supernova $SUPERNOVA      --read1 " $r1p " \
                                    --read1 " $r1h " \
