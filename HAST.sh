@@ -168,28 +168,31 @@ $STEP1 --paternal_mer ../paternal.unique.filter.mer \
                       --filial " $C2 " >01.classify_reads.log \
                       2>01.classify_reads.err
 cd ..
-mv '01.classify_reads/*.paternal.fastq' ./
-mv '01.classify_reads/*.maternal.fastq' ./
-mv '00.build_kmers/*.homozygote.fastq' ./
-mv '00.build_kmers/*.nobarcode.fastq' ./
-
+mv 01.classify_reads/*.paternal.fastq   ./
+mv 01.classify_reads/*.maternal.fastq   ./
+mv 01.classify_reads/*.homozygote.fastq ./
+mv 01.classify_reads/*.nobarcode.fastq  ./
 
 # step 02 : assembly by supernova
 mkdir -p '02.maternal_assembly'
 cd '02.maternal_assembly'
+r1m=`ls ../*r1*.maternal.fastq`
+r1h=`ls ../*r1*.homozygote.fastq`
+r2m=`ls ../*r2*.maternal.fastq`
+r2h=`ls ../*r2*.homozygote.fastq`
 echo """
-$STEP2 --supernova $SUPERNOVA_PATH --read1 ../*r1*.maternal.fastq \
-                                   --read1 ../*r1*.nobarcode.fastq \
-                                   --read2 ../*r2*.maternal.fastq \
-                                   --read2 ../*r2*.nobarcode.fastq \
+$STEP2 --supernova $SUPERNOVA      --read1 " $r1m " \
+                                   --read1 " $r1h " \
+                                   --read2 " $r2m " \
+                                   --read2 " $r2h " \
                                    --prefix output \
                                    >02.maternal_assembly.log \
                                    2>02.maternal_assembly.err
 """
-$STEP2 --supernova $SUPERNOVA_PATH --read1 ../*r1*.maternal.fastq \
-                                   --read1 ../*r1*.nobarcode.fastq \
-                                   --read2 ../*r2*.maternal.fastq \
-                                   --read2 ../*r2*.nobarcode.fastq \
+$STEP2 --supernova $SUPERNOVA      --read1 " $r1m " \
+                                   --read1 " $r1h " \
+                                   --read2 " $r2m " \
+                                   --read2 " $r2h " \
                                    --prefix output \
                                    >02.maternal_assembly.log \
                                    2>02.maternal_assembly.err
@@ -198,20 +201,23 @@ cd ..
 
 mkdir -p '02.paternal_assembly'
 cd '02.paternal_assembly'
-
+r1p=`ls ../*r1*.paternal.fastq`
+r1h=`ls ../*r1*.homozygote.fastq`
+r2p=`ls ../*r2*.paternal.fastq`
+r2h=`ls ../*r2*.homozygote.fastq`
 echo """
-$STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
-                                   --read1 ../*1*.nobarcode.fastq \
-                                   --read2 ../*2*.paternal.fastq \
-                                   --read2 ../*2*.nobarcode.fastq \
+$STEP2 --supernova $SUPERNOVA      --read1 " $r1p " \
+                                   --read1 " $r1h " \
+                                   --read2 " $r2p " \
+                                   --read2 " $r2h " \
                                    --prefix output \
                                    >02.paternal_assembly.log \
                                    2>02.paternal_assembly.err
 """
-$STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
-                                   --read1 ../*1*.nobarcode.fastq \
-                                   --read2 ../*2*.paternal.fastq \
-                                   --read2 ../*2*.nobarcode.fastq \
+$STEP2 --supernova $SUPERNOVA      --read1 " $r1p " \
+                                   --read1 " $r1h " \
+                                   --read2 " $r2p " \
+                                   --read2 " $r2h " \
                                    --prefix output \
                                    >02.paternal_assembly.log \
                                    2>02.paternal_assembly.err
