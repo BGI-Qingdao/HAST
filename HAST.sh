@@ -222,14 +222,14 @@ cd ..
 mkdir -p '03.maternal_output'
 cd '03.maternal_output'
 echo """
-$STEP3 --supernova_path '../02.maternal_assembly' \
+$STEP3 --assembly_path '../02.maternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
        --prefix output \
        >03.maternal_output.log \
        2>03.maternal_output.err
 """
-$STEP3 --supernova_path '../02.maternal_assembly' \
+$STEP3 --assembly_path '../02.maternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
        --prefix output \
@@ -240,14 +240,14 @@ cd ..
 mkdir -p '03.paternal_output'
 cd '03.paternal_output'
 echo """
-$STEP3 --supernova_path '../02.paternal_assembly' \
+$STEP3 --assembly_path '../02.paternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
        --prefix output \
        >03.paternal_output.log \
        2>03.paternal_output.err
 """
-$STEP3 --supernova_path '../02.paternal_assembly' \
+$STEP3 --assembly_path '../02.paternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
        --prefix output \
