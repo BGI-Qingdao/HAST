@@ -158,14 +158,14 @@ cd '01.classify_reads'
 echo """
 $STEP1 --paternal_mer ../paternal.unique.filter.mer \
                       --maternal_mer ../maternal.unique.filter.mer \
-                      --filter " $C1 " \
-                      --filter " $C2 " >01.classify_reads.log \
+                      --filial " $C1 " \
+                      --filial " $C2 " >01.classify_reads.log \
                       2>01.classify_reads.err
 """
 $STEP1 --paternal_mer ../paternal.unique.filter.mer \
                       --maternal_mer ../maternal.unique.filter.mer \
-                      --filter " $C1 " \
-                      --filter " $C2 " >01.classify_reads.log \
+                      --filial " $C1 " \
+                      --filial " $C2 " >01.classify_reads.log \
                       2>01.classify_reads.err
 cd ..
 mv '01.classify_reads/*.paternal.fastq' ./
