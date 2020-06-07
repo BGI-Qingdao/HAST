@@ -100,7 +100,7 @@ $SCRIPT_PATH/bin/Split --fa_1 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.1.fasta \
                        --fa_2 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.2.fasta \
                        --idx_1 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.1.idx \
                        --idx_2 $SUPERNOVA_OUTPUT_DIR/${PREFIX}.2.idx  \
-                       --parefix ${PREFIX}
+                       --prefix ${PREFIX}
 
 # haplotype bubbles based on paternal unique kmers
 cat ${PREFIX}.phb.1.fa ${PREFIX}.phb.2.fa >  ${PREFIX}.phb.12.fa

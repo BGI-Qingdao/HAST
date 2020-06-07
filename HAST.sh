@@ -125,10 +125,10 @@ cd '00.build_kmers'
 # log command first
 echo """
 $STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
-       --thread $CPU --memory $MEMORY 
+       --thread $CPU
 """
 $STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
-       --thread $CPU --memory $MEMORY 
+       --thread $CPU
 cd ..
 mv '00.build_kmers/paternal.unique.filter.mer' ./
 mv '00.build_kmers/maternal.unique.filter.mer' ./
