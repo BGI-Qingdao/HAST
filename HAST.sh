@@ -135,7 +135,7 @@ if [[ ! -e $SUPERNOVA/supernova ]] ; then
     exit 1
 fi
 
-mkdir '00.build_kmers'
+mkdir -p '00.build_kmers'
 cd '00.build_kmers'
 # log command first
 echo """
@@ -150,7 +150,7 @@ mv '00.build_kmers/maternal.unique.filter.mer' ./
 
 # step 01 : classify filial stLFR reads
 
-mkdir '01.classify_reads'
+mkdir -p '01.classify_reads'
 cd '01.classify_reads' 
 echo """
 $STEP1 --paternal_mer ../paternal.unique.filter.mer \
@@ -172,7 +172,7 @@ mv '00.build_kmers/*.nobarcode.fastq' ./
 
 
 # step 02 : assembly by supernova
-mkdir '02.maternal_assembly'
+mkdir -p '02.maternal_assembly'
 cd '02.maternal_assembly'
 echo """
 $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*r1*.maternal.fastq \
@@ -191,7 +191,7 @@ $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*r1*.maternal.fastq \
 # above codes shows why read1 must contain r1 and read2 must contain r2
 cd ..
 
-mkdir '02.paternal_assembly'
+mkdir -p '02.paternal_assembly'
 cd '02.paternal_assembly'
 
 echo """
@@ -211,7 +211,7 @@ $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
 cd ..
 
 # step 03 : assembly by supernova
-mkdir '03.maternal_output'
+mkdir -p '03.maternal_output'
 cd '03.maternal_output'
 echo """
 $STEP3 --supernova_path '../02.maternal_assembly' \
@@ -225,7 +225,7 @@ $STEP3 --supernova_path '../02.maternal_assembly' \
        --prefix output > log 2>err
 cd ..
 
-mkdir '03.paternal_output'
+mkdir -p '03.paternal_output'
 cd '03.paternal_output'
 echo """
 $STEP3 --supernova_path '../02.paternal_assembly' \
