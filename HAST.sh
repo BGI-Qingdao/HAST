@@ -111,7 +111,8 @@ do
 done
 
 
-SCRIPT_PATH=`realpath $0`
+SCRIPT_PATH=`dirname $0`
+SCRIPT_PATH=`realpath $SCRIPT_PATH`
 PATERNAL=`get_real_path $PATERNAL`
 MATERNAL=`get_real_path $MATERNAL`
 C1=`get_real_path $C1`
@@ -140,10 +141,12 @@ cd '00.build_kmers'
 # log command first
 echo """
 $STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
-       --thread $CPU
+       --auto_bounds  --thread $CPU >00.build_kmers.log \
+       2>00.build_kmers.err
 """
 $STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
-       --thread $CPU
+       --auto_bounds  --thread $CPU >00.build_kmers.log \
+       2>00.build_kmers.err
 cd ..
 mv '00.build_kmers/paternal.unique.filter.mer' ./
 mv '00.build_kmers/maternal.unique.filter.mer' ./
@@ -155,15 +158,15 @@ cd '01.classify_reads'
 echo """
 $STEP1 --paternal_mer ../paternal.unique.filter.mer \
                       --maternal_mer ../maternal.unique.filter.mer \
-                      --auto_bounds \
                       --filter " $C1 " \
-                      --filter " $C2 " >log 2>err
+                      --filter " $C2 " >01.classify_reads.log \
+                      2>01.classify_reads.err
 """
 $STEP1 --paternal_mer ../paternal.unique.filter.mer \
                       --maternal_mer ../maternal.unique.filter.mer \
-                      --auto_bounds \
                       --filter " $C1 " \
-                      --filter " $C2 " >log 2>err
+                      --filter " $C2 " >01.classify_reads.log \
+                      2>01.classify_reads.err
 cd ..
 mv '01.classify_reads/*.paternal.fastq' ./
 mv '01.classify_reads/*.maternal.fastq' ./
@@ -180,14 +183,16 @@ $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*r1*.maternal.fastq \
                                    --read2 ../*r2*.maternal.fastq \
                                    --read2 ../*r2*.nobarcode.fastq \
                                    --prefix output \
-                                   >log 2>err
+                                   >02.maternal_assembly.log \
+                                   2>02.maternal_assembly.err
 """
 $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*r1*.maternal.fastq \
                                    --read1 ../*r1*.nobarcode.fastq \
                                    --read2 ../*r2*.maternal.fastq \
                                    --read2 ../*r2*.nobarcode.fastq \
                                    --prefix output \
-                                   >log 2>err
+                                   >02.maternal_assembly.log \
+                                   2>02.maternal_assembly.err
 # above codes shows why read1 must contain r1 and read2 must contain r2
 cd ..
 
@@ -200,14 +205,16 @@ $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
                                    --read2 ../*2*.paternal.fastq \
                                    --read2 ../*2*.nobarcode.fastq \
                                    --prefix output \
-                                   >log 2>err
+                                   >02.paternal_assembly.log \
+                                   2>02.paternal_assembly.err
 """
 $STEP2 --supernova $SUPERNOVA_PATH --read1 ../*1*.paternal.fastq \
                                    --read1 ../*1*.nobarcode.fastq \
                                    --read2 ../*2*.paternal.fastq \
                                    --read2 ../*2*.nobarcode.fastq \
                                    --prefix output \
-                                   >log 2>err
+                                   >02.paternal_assembly.log \
+                                   2>02.paternal_assembly.err
 cd ..
 
 # step 03 : assembly by supernova
@@ -217,12 +224,16 @@ echo """
 $STEP3 --supernova_path '../02.maternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
-       --prefix output > log 2>err
+       --prefix output \
+       >03.maternal_output.log \
+       2>03.maternal_output.err
 """
 $STEP3 --supernova_path '../02.maternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
-       --prefix output > log 2>err
+       --prefix output \
+       >03.maternal_output.log \
+       2>03.maternal_output.err
 cd ..
 
 mkdir -p '03.paternal_output'
@@ -231,12 +242,16 @@ echo """
 $STEP3 --supernova_path '../02.paternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
-       --prefix output > log 2>err
+       --prefix output \
+       >03.paternal_output.log \
+       2>03.paternal_output.err
 """
 $STEP3 --supernova_path '../02.paternal_assembly' \
        --paternal_mer ../paternal.unique.filter.mer \
        --maternal_mer ../maternal.unique.filter.mer \
-       --prefix output > log 2>err
+       --prefix output \
+       >03.paternal_output.log \
+       2>03.paternal_output.err
 cd ..
 
 echo 'All done'
