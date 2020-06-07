@@ -1,5 +1,15 @@
 #!/bin/bash
 
+function get_real_path(){
+    local vv=""
+    for x in $1
+    do
+        real_p=`realpath $1`
+        vv=$vv" $real_p "
+    done
+    echo $vv
+}
+
 function usage() {
 echo """
 Usage   :
@@ -100,7 +110,12 @@ do
     shift
 done
 
-SCRIPT_PATH=`dirname $0`
+
+SCRIPT_PATH=`realpath $0`
+PATERNAL=`get_real_path $PATERNAL`
+MATERNAL=`get_real_path $MATERNAL`
+C1=`get_real_path $C1`
+C2=`get_real_path $C2`
 STEP0=$SCRIPT_PATH/'00.build_unshare_kmers_by_jellyfish/build_unshared_kmers.sh'
 STEP1=$SCRIPT_PATH/'01.classify_stlfr_reads/classify_stlfr_reads.sh'
 STEP2=$SCRIPT_PATH/'02.assemble_by_supernova/assemble_by_supernova.sh'
