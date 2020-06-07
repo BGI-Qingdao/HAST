@@ -105,7 +105,7 @@ SCRIPT_PATH=`dirname $0`
 echo "INFO  : supernova in    : $SUPERNOVA_PATH"
 echo "INFO  : all read1 files : $READ1"
 echo "INFO  : all read2 files : $READ2"
-echo "INFO  : max threads     : $CPU"
+echo "INFO  : max threads     : $THREADS"
 echo "INFO  : max memory      : $MEMORY"
 
 if [[ ! -e $SUPERNOVA_WL ]] ; then

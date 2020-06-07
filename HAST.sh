@@ -29,12 +29,12 @@ Options :
         --read1         filial read1 of stLFR reads in fastq format ;
                          * if file is gzip format, it must be ended by .gz
                          * multi-file-name should be sperated by whitespace and include by \" \";
-                         * file name must contain \"r1\" , otherwise error will occur ;
+                         * file name must contain \"r1.\" , otherwise error will occur ;
 
         --read2         filial read2 of stLFR reads;
                          * if file is gzip format, it must be ended by .gz
                          * multi-file-name should be sperated by whitespace and include by \" \";
-                         * file name must contain \"r2\" , otherwise error will occur ;
+                         * file name must contain \"r2.\" , otherwise error will occur ;
 
         --supernova     supernova install path;
 
@@ -171,10 +171,10 @@ cd ..
 # step 02 : assembly by supernova
 mkdir -p '02.maternal_assembly'
 cd '02.maternal_assembly'
-r1m=`ls ../01.classify_reads/*r1*.maternal.fastq`
-r1h=`ls ../01.classify_reads/*r1*.homozygote.fastq`
-r2m=`ls ../01.classify_reads/*r2*.maternal.fastq`
-r2h=`ls ../01.classify_reads/*r2*.homozygote.fastq`
+r1m=`ls ../01.classify_reads/*r1.*.maternal.fastq`
+r1h=`ls ../01.classify_reads/*r1.*.homozygote.fastq`
+r2m=`ls ../01.classify_reads/*r2.*.maternal.fastq`
+r2h=`ls ../01.classify_reads/*r2.*.homozygote.fastq`
 echo """
 $STEP2 --supernova $SUPERNOVA      --read1 " $r1m " \
                                    --read1 " $r1h " \
@@ -196,10 +196,10 @@ cd ..
 
 mkdir -p '02.paternal_assembly'
 cd '02.paternal_assembly'
-r1p=`ls ../01.classify_reads/*r1*.paternal.fastq`
-r1h=`ls ../01.classify_reads/*r1*.homozygote.fastq`
-r2p=`ls ../01.classify_reads/*r2*.paternal.fastq`
-r2h=`ls ../01.classify_reads/*r2*.homozygote.fastq`
+r1p=`ls ../01.classify_reads/*r1.*.paternal.fastq`
+r1h=`ls ../01.classify_reads/*r1.*.homozygote.fastq`
+r2p=`ls ../01.classify_reads/*r2.*.paternal.fastq`
+r2h=`ls ../01.classify_reads/*r2.*.homozygote.fastq`
 echo """
 $STEP2 --supernova $SUPERNOVA      --read1 " $r1p " \
                                    --read1 " $r1h " \
