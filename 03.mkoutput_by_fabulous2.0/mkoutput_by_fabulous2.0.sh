@@ -16,8 +16,8 @@ Options :
 
 Example :
 
-./mkoutput_by_fabulous2.0.sh --assembly_path supernova_asmfolder \\¬
-                                           --prefix  output \\¬
+./mkoutput_by_fabulous2.0.sh --assembly_path supernova_asmfolder \\
+                                           --prefix  output \\
                                            --paternal_mer paternal.unique.filter.mer \\
                                            --maternal_mer maternal.unique.filter.mer
 """
@@ -49,7 +49,7 @@ do
             usage
             exit 0
             ;;
-        "--supernova")
+        "--assembly_path")
             SUPERNOVA_OUTPUT_DIR=$2
             shift
             ;;

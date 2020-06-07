@@ -104,12 +104,12 @@ SCRIPT_PATH=`dirname $0`
 STEP0=$SCRIPT_PATH/'00.build_unshare_kmers_by_jellyfish/build_unshared_kmers.sh'
 STEP1=$SCRIPT_PATH/'01.classify_stlfr_reads/classify_stlfr_reads.sh'
 STEP2=$SCRIPT_PATH/'02.assemble_by_supernova/assemble_by_supernova.sh'
-STEP3=$SCRIPT_PATH/'mkoutput_by_fabulous2.0.sh'
+STEP3=$SCRIPT_PATH/'03.mkoutput_by_fabulous2.0/mkoutput_by_fabulous2.0.sh'
 # step 00 build unshare kmers from paternal ngs reads
 
 if [[ ! -e $STEP0  || 
       ! -e $STEP1  ||
-      ！-e $STEP2  ||
+      ! -e $STEP2  ||
       ! -e $STEP3 ]] ; then 
     echo "FATAL :   required script is missing. exit ... "
     exit 1

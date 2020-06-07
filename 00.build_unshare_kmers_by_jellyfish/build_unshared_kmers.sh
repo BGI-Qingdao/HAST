@@ -142,10 +142,10 @@ if [[ ! -e $JELLY ]] ; then
 fi
 
 # sanity check
-if [[ $MEMORY -lt 1  || $CPU -lt 1 || \
-    -z $PATERNAL || -z $MATERNAL  \
-    $MER -lt 11 || \
-    $MLOWER -lt 1 || $MUPPER -gt 100000000 || \
+if [[ $MEMORY -lt 1  || $CPU -lt 1 ||
+    -z $PATERNAL || -z $MATERNAL  ||
+    $MER -lt 11 ||
+    $MLOWER -lt 1 || $MUPPER -gt 100000000 ||
     $PLOWER -lt 1 || $PUPPER -gt 100000000 ]] ; then
     echo "ERROR : arguments invalid ... exit!!! "
     exit 1
