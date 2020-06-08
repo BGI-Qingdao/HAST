@@ -5,7 +5,7 @@ function get_real_path(){
     for x in $1
     do
         real_p=`realpath $1`
-        vv=$vv" $real_p "
+        vv=$vv" "$real_p
     done
     echo $vv
 }
@@ -140,11 +140,11 @@ mkdir -p '00.build_kmers'
 cd '00.build_kmers'
 # log command first
 echo """
-$STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
+$STEP0 --paternal "$PATERNAL" --maternal "$MATERNAL" \
        --auto_bounds  --thread $CPU >00.build_kmers.log \
        2>00.build_kmers.err
 """
-$STEP0 --paternal " $PATERNAL " --maternal " $MATERNAL " \
+$STEP0 --paternal "$PATERNAL" --maternal "$MATERNAL" \
        --auto_bounds  --thread $CPU >00.build_kmers.log \
        2>00.build_kmers.err
 cd ..
@@ -156,15 +156,14 @@ cd '01.classify_reads'
 echo """
 $STEP1 --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
-                      --filial " $C1 " \
-                      --filial " $C2 " >01.classify_reads.log \
+                      --filial "$C1" \
+                      --filial "$C2" >01.classify_reads.log \
                       2>01.classify_reads.err
 """
 $STEP1 --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
-                      --maternal_mer \
-                      --filial " $C1 " \
-                      --filial " $C2 " >01.classify_reads.log \
+                      --filial "$C1" \
+                      --filial "$C2" >01.classify_reads.log \
                       2>01.classify_reads.err
 cd ..
 
@@ -176,18 +175,18 @@ r1h=`ls ../01.classify_reads/*r1.*.homozygote.fastq`
 r2m=`ls ../01.classify_reads/*r2.*.maternal.fastq`
 r2h=`ls ../01.classify_reads/*r2.*.homozygote.fastq`
 echo """
-$STEP2 --supernova $SUPERNOVA      --read1 " $r1m " \
-                                   --read1 " $r1h " \
-                                   --read2 " $r2m " \
-                                   --read2 " $r2h " \
+$STEP2 --supernova $SUPERNOVA      --read1 "$r1m" \
+                                   --read1 "$r1h" \
+                                   --read2 "$r2m" \
+                                   --read2 "$r2h" \
                                    --prefix output \
                                    >02.maternal_assembly.log \
                                    2>02.maternal_assembly.err
 """
-$STEP2 --supernova $SUPERNOVA      --read1 " $r1m " \
-                                   --read1 " $r1h " \
-                                   --read2 " $r2m " \
-                                   --read2 " $r2h " \
+$STEP2 --supernova $SUPERNOVA      --read1 "$r1m" \
+                                   --read1 "$r1h" \
+                                   --read2 "$r2m" \
+                                   --read2 "$r2h" \
                                    --prefix output \
                                    >02.maternal_assembly.log \
                                    2>02.maternal_assembly.err
@@ -201,18 +200,18 @@ r1h=`ls ../01.classify_reads/*r1.*.homozygote.fastq`
 r2p=`ls ../01.classify_reads/*r2.*.paternal.fastq`
 r2h=`ls ../01.classify_reads/*r2.*.homozygote.fastq`
 echo """
-$STEP2 --supernova $SUPERNOVA      --read1 " $r1p " \
-                                   --read1 " $r1h " \
-                                   --read2 " $r2p " \
-                                   --read2 " $r2h " \
+$STEP2 --supernova $SUPERNOVA      --read1 "$r1p" \
+                                   --read1 "$r1h" \
+                                   --read2 "$r2p" \
+                                   --read2 "$r2h" \
                                    --prefix output \
                                    >02.paternal_assembly.log \
                                    2>02.paternal_assembly.err
 """
-$STEP2 --supernova $SUPERNOVA      --read1 " $r1p " \
-                                   --read1 " $r1h " \
-                                   --read2 " $r2p " \
-                                   --read2 " $r2h " \
+$STEP2 --supernova $SUPERNOVA      --read1 "$r1p" \
+                                   --read1 "$r1h" \
+                                   --read2 "$r2p" \
+                                   --read2 "$r2h" \
                                    --prefix output \
                                    >02.paternal_assembly.log \
                                    2>02.paternal_assembly.err
