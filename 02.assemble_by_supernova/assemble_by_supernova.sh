@@ -10,7 +10,7 @@ Options :
                 --supernova         supernova install path;
                 --read1             read1 fastq;
                 --read2             read2 fastq;
-                --cpu               max threads to used by supernova;
+                --thread            max threads to used by supernova;
                 --memory            max memory(G) to used by supernova;
                 --min_rp            minimax accept read-pair per barcode; barcode with read pair less-than min_rp will be ignored;
                 --prefix            prefix of output files;

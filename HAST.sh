@@ -242,6 +242,7 @@ echo """
 $STEP3 --assembly_path '../02.paternal_assembly' \
        --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
+       --thread $CPU \
        --prefix output \
        >03.paternal_output.log \
        2>03.paternal_output.err
@@ -249,6 +250,7 @@ $STEP3 --assembly_path '../02.paternal_assembly' \
 $STEP3 --assembly_path '../02.paternal_assembly' \
        --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
+       --thread $CPU \
        --prefix output \
        >03.paternal_output.log \
        2>03.paternal_output.err
