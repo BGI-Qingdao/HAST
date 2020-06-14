@@ -11,7 +11,7 @@ Options :
                 --read2             read2 fastq;
                 --cpu               max threads to used by supernova;
                 --memory            max memory(G) to used by supernova;
-                --min_rp            minimax accept read-pair per barcode; barcode with read pair less-than min_rp will be ignored;
+                --min_rp            minimum accept read-pair per barcode; barcode with read pair less-than min_rp will be ignored;
                 --prefix            prefix of output files;
 
 Example :
