@@ -6,7 +6,7 @@ BEGIN{
     un_reads=0;
     total=0;
     read_type == -1 ; # 0 : no-barcode ; 1 : paternal  ;
-                      # 2 : maternal   ; 3 : homozyote ;
+                      # 2 : maternal   ; 3 : homozygous ;
 }
 {
     if( FILENAME == ARGV[1] ) {
@@ -14,7 +14,7 @@ BEGIN{
     } else if ( FILENAME == ARGV[2] ) {
         maternal_barcodes[$1]=1;
     } else if ( FILENAME == ARGV[3] ) {
-        homozygote_barcodes[$1]=1;
+        homozygous_barcodes[$1]=1;
     } else {
         if( FNR == 1 ) {
             print FILENAME >>"filter_reads.log";
@@ -28,7 +28,7 @@ BEGIN{
                 } else if ( $2 in maternal_barcodes ) {
                     ma_reads += 1 ;
                     read_type = 2 ;
-                } else if ( $2 in homozygote_barcodes ) {
+                } else if ( $2 in homozygous_barcodes ) {
                     ho_reads += 1 ;
                     read_type = 3 ;
                 } else {
@@ -48,7 +48,7 @@ BEGIN{
         } else if ( read_type == 2 ) {
             print $0 >prefix".maternal.fastq" ;
         } else if ( read_type == 3 ) {
-            print $0 >prefix".homozygote.fastq" ;
+            print $0 >prefix".homozygous.fastq" ;
         }
     }
 }
@@ -57,5 +57,5 @@ END{
     printf("#Reads without barcode      : %d \n",no_reads) >>"filter_reads.log";
     printf("#Paternal reads             : %d \n",pa_reads) >>"filter_reads.log";
     printf("#Maternal reads             : %d \n",ma_reads) >>"filter_reads.log";
-    printf("#Homozygote reads           : %d \n",ho_reads) >>"filter_reads.log";
+    printf("#Homozygous reads           : %d \n",ho_reads) >>"filter_reads.log";
 }

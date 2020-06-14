@@ -171,9 +171,9 @@ cd ..
 mkdir -p '02.maternal_assembly'
 cd '02.maternal_assembly'
 r1m=`ls ../01.classify_reads/*r1.*.maternal.fastq`
-r1h=`ls ../01.classify_reads/*r1.*.homozygote.fastq`
+r1h=`ls ../01.classify_reads/*r1.*.homozygous.fastq`
 r2m=`ls ../01.classify_reads/*r2.*.maternal.fastq`
-r2h=`ls ../01.classify_reads/*r2.*.homozygote.fastq`
+r2h=`ls ../01.classify_reads/*r2.*.homozygous.fastq`
 echo """
 $STEP2 --supernova $SUPERNOVA      --read1 "$r1m" \
                                    --read1 "$r1h" \
@@ -196,9 +196,9 @@ cd ..
 mkdir -p '02.paternal_assembly'
 cd '02.paternal_assembly'
 r1p=`ls ../01.classify_reads/*r1.*.paternal.fastq`
-r1h=`ls ../01.classify_reads/*r1.*.homozygote.fastq`
+r1h=`ls ../01.classify_reads/*r1.*.homozygous.fastq`
 r2p=`ls ../01.classify_reads/*r2.*.paternal.fastq`
-r2h=`ls ../01.classify_reads/*r2.*.homozygote.fastq`
+r2h=`ls ../01.classify_reads/*r2.*.homozygous.fastq`
 echo """
 $STEP2 --supernova $SUPERNOVA      --read1 "$r1p" \
                                    --read1 "$r1h" \
