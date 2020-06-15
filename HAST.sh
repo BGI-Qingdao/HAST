@@ -19,26 +19,25 @@ Options :
         -h/--help       print this usage and exit ;
 
         --paternal      paternal ngs reads in fasta or fastq format ;
-                         * if file is gzip format, it must be ended by .gz
-                         * multi-file-name should be sperated by whitespace and include by \" \";
+                         * accept input file in gzip format, but the name should be ended by ".gz"
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
 
         --maternal      maternal ngs reads in fasta or fastq format ;
-                         * if file is gzip format, it must be ended by .gz
-                         * multi-file-name should be sperated by whitespace and include by \" \";
-
+                         * accept input file in gzip format, but the name should be ended by ".gz"
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
         --read1         filial read1 of stLFR reads in fastq format ;
-                         * if file is gzip format, it must be ended by .gz
-                         * multi-file-name should be sperated by whitespace and include by \" \";
-                         * file name must contain \"r1.\" , otherwise error will occur ;
+                         * accept input file in gzip format, but the name should be ended by ".gz"
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
+                         * file name should contain "r1" ;
 
         --read2         filial read2 of stLFR reads;
-                         * if file is gzip format, it must be ended by .gz
-                         * multi-file-name should be sperated by whitespace and include by \" \";
-                         * file name must contain \"r2.\" , otherwise error will occur ;
+                         * accept input file in gzip format, but the name should be ended by ".gz"
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
+                         * file name should contain "r2" ;
 
-        --supernova     supernova install path;
+        --supernova     installed supernova path;
 
-        --thread        max thread ;
+        --thread        max threads ;
 
 Example :
         ./HAST.sh --supernova /home/software/supernova \\
