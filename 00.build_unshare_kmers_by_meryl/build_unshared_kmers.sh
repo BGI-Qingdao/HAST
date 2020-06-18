@@ -149,7 +149,7 @@ if [[ ! -e $ANALYSIS  && $AUTO_BOUNDS == 1 ]] ; then
     exit 1
 fi
 if [[ ! -e $MERYL ]] ; then
-    echo "ERROR : \"$JELLY\"  is missing. please download it from github. exit..."
+    echo "ERROR : \"$MERYL\"  is missing. please download it from github. exit..."
     exit 1
 fi
 
