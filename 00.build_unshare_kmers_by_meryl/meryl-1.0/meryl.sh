@@ -3,7 +3,7 @@
 SCRIPT_PATH=`dirname $0`
 SCRIPT_PATH=`realpath $SCRIPT_PATH`
 
-perl $SCRIPT_PATH"/split_reads.pl" $*
+perl $SCRIPT_PATH"/split.pl" $*
 tags=`seq -w 1 100`
 for tag in $tags
 do

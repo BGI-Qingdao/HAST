@@ -180,6 +180,7 @@ if [[ ! -e "step_01_done" ]] ; then
     mkdir -p maternal_meryl
     cd maternal_meryl
     $MERYL $MATERNAL  || exit 1
+    cd ..
     date >>"step_01_done"
 else
     echo "skip kmer count of maternal because step_01_done file already exist ..."
@@ -189,6 +190,7 @@ if [[ ! -e "step_02_done" ]] ; then
     mkdir -p paternal_meryl
     cd paternal_meryl
     $MERYL $PATERNAL || exit 1
+    cd ..
     date >>"step_02_done"
 else
     echo "skip kmer count of paternal because step_02_done file already exist ..."
