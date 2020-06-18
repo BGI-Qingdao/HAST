@@ -7,7 +7,7 @@ function usage(){
     echo "Usage    :"
     echo "    ./build_unshared_kmers.sh [OPTION]" 
     echo ""
-    echo "Build parental unshared-kmers based on paternal and maternal NGS reads by jellyfish."
+    echo "Build parental unshared-kmers based on paternal and maternal NGS reads by meryl."
     echo ""
     echo "Options  :"
     echo "        --paternal    paternal NGS reads file in FASTA/FASTQ format."
@@ -175,7 +175,7 @@ date
 # extract paternal.unique.filter.mer & maternal.unique.filter.mer
 ###############################################################################
 # count NGS reads
-echo "extract unique mers by jellyfish ..."
+echo "extract unique mers by meryl ..."
 if [[ ! -e "step_01_done" ]] ; then
     mkdir -p maternal_meryl
     cd maternal_meryl
