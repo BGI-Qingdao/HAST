@@ -8,12 +8,12 @@ echo """
 Usage    :
     ./classify_stlfr_reads.sh [OPTION]
 
-Trio phase TGS reads use exist kmer datasets.
+Trio phase stLFR reads use exist kmer datasets.
 
 Options  :
         --paternal_mer paternal unique kmers
         --maternal_mer maternal unique kmers
-        --filial       filial TGS reads file.
+        --filial       filial stLFR reads file.
                        file in gzip format can be accepted, but filename must end by ".gz".
         --thread       thread num.
                        [ optional, default 8 threads. ]
