@@ -180,6 +180,8 @@ date
 # extract paternal.unique.filter.mer & maternal.unique.filter.mer
 ###############################################################################
 # count NGS reads
+export CPU=$CPU
+export MEMORY=$MEMORY
 echo "extract unique mers by meryl ..."
 if [[ ! -e "step_01_done" ]] ; then
     mkdir -p maternal_meryl
