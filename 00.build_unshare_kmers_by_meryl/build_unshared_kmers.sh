@@ -142,7 +142,8 @@ echo "    upper(paternal): $PUPPER"
 echo "    auto_bounds    : $AUTO_BOUNDS"
 echo "build_unshared_kmer.sh in dir  : $SPATH"
 
-MERYL=$SPATH"/meryl/meryl.sh"
+MERYL_COUNT=$SPATH"/meryl/meryl.sh"
+MERYL=$SPATH"/meryl/meryl"
 ANALYSIS=$SPATH"/analysis_kmercount.sh"
 if [[ ! -e $ANALYSIS  && $AUTO_BOUNDS == 1 ]] ; then
     echo "ERROR : \"$ANALYSIS\"  is missing. please download it from github. exit..."
@@ -150,6 +151,10 @@ if [[ ! -e $ANALYSIS  && $AUTO_BOUNDS == 1 ]] ; then
 fi
 if [[ ! -e $MERYL ]] ; then
     echo "ERROR : \"$MERYL\"  is missing. please download it from github. exit..."
+    exit 1
+fi
+if [[ ! -e $MERYL_COUNT ]] ; then
+    echo "ERROR : \"$MERYL_COUNT\"  is missing. please download it from github. exit..."
     exit 1
 fi
 
@@ -179,7 +184,7 @@ echo "extract unique mers by meryl ..."
 if [[ ! -e "step_01_done" ]] ; then
     mkdir -p maternal_meryl
     cd maternal_meryl
-    $MERYL $MATERNAL  || exit 1
+    $MERYL_COUNT $MATERNAL  || exit 1
     cd ..
     date >>"step_01_done"
 else
@@ -189,7 +194,7 @@ fi
 if [[ ! -e "step_02_done" ]] ; then
     mkdir -p paternal_meryl
     cd paternal_meryl
-    $MERYL $PATERNAL || exit 1
+    $MERYL_COUNT $PATERNAL || exit 1
     cd ..
     date >>"step_02_done"
 else
