@@ -3,7 +3,7 @@
 SCRIPT_PATH=`dirname $0`
 SCRIPT_PATH=`realpath $SCRIPT_PATH`
 
-perl $SCRIPT_PATH"/split.pl" $*
+perl $SCRIPT_PATH"/split.pl" $* || exit 1
 tags=`seq -w 1 100`
 for tag in $tags
 do
@@ -18,6 +18,9 @@ done
 
 echo "Merge start ...."
 $SCRIPT_PATH"/meryl"  threads=$CPU memory=$MEMORY \
-        union-sum output ./reads.final.meryl ./reads-???.meryl
+        union-sum output ./reads.final.meryl ./reads-???.meryl || exit 1
+
+rm -rf ./reads-???.fasta.gz
+rm -rf ./reads-???.meryl
 
 echo "Merge end  ....  ALL DONE "
