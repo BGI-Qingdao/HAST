@@ -119,17 +119,18 @@ struct OutputCache {
             }
 
             if( secondBest == 0 and readHapCount != 0 )
-                printf("Read %s classified as %s with %s\n",data.name.c_str(), readHap.c_str(), data.hapCounts_Str().c_str());
+                printf("%s\t%s\t%0.6f\n",data.name.c_str(), readHap.c_str(), readHapCount);
+                //printf("Read %s classified as %s with %s\n",data.name.c_str(), readHap.c_str(), data.hapCounts_Str().c_str());
             else if( readHapCount == 0 and secondBest == 0 )
-                printf("Read %s has no distringuising mers, ambiguous\n",(data.name.c_str()));
+                printf("%s\t%s\t0.0\n",data.name.c_str(),"ambiguous");
             else if( readHapCount == 0 and secondBest != 0 ) {
                 printf("Not possible!\n");
                 exit(1);
             }
             else if ( readHapCount / secondBest > 1 )
-                printf ("Read %s classified as %s due to %.6f but second best existed with %.6f all counts %s\n",data.name.c_str(), readHap.c_str(), readHapCount, secondBest, data.hapCounts_Str().c_str());
+                printf("%s\t%s\t%0.6f\n",data.name.c_str(), readHap.c_str(), readHapCount);
             else
-                printf("Read %s is amibigous unalbe to classify due to %.6f and %.6f\n",data.name.c_str(), readHapCount, secondBest); 
+                printf("%s\t%s\t%0.6f\n",data.name.c_str(), "ambiguous", readHapCount);
         }
     }
 };
@@ -267,6 +268,7 @@ void processFastq(const std::string & file,int t_num){
     mt.wait();
     mt.data.PrintOutput();
 }
+
 void processFasta(const std::string & file,int t_num){
     std::string head;
     std::string seq;

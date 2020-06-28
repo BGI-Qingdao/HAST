@@ -108,9 +108,9 @@ cat ${PREFIX}.phb.1.fa ${PREFIX}.phb.2.fa >  ${PREFIX}.phb.12.fa
 $SCRIPT_PATH/bin/classify --hap $PATERNAL_KMERS  --hap $MATERNAL_KMERS \
                           --thread $CPU  --read ${PREFIX}.phb.12.fa \
                           --format fasta >phasing.out  2>phasing.log
-cat phasing.out |grep Read |grep haplotype0 |awk '{print $2}' > ${PREFIX}.phb.12.father.idx
-cat phasing.out |grep Read |grep haplotype1 |awk '{print $2}' > ${PREFIX}.phb.12.mother.idx
-cat phasing.out |grep Read |grep ambiguous |awk '{print $2}' > ${PREFIX}.phb.12.ambiguous.idx
+cat phasing.out |grep Read |grep haplotype0 | awk '{printf("%s\t%s\n",$1,$3);}' > ${PREFIX}.phb.12.father.idx
+cat phasing.out |grep Read |grep haplotype1 | awk '{printf("%s\t%s\n",$1,$3);}'  > ${PREFIX}.phb.12.mother.idx
+cat phasing.out |grep Read |grep ambiguous  | awk '{printf("%s\t%s\n",$1,$3);}' > ${PREFIX}.phb.12.ambiguous.idx
 
 # cluster parental groups and output fasta
 $SCRIPT_PATH/bin/MergePhaseResult  --prefix ${PREFIX}  \

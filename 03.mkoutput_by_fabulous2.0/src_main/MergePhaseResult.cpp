@@ -30,9 +30,11 @@ struct MergeIdsElement {
         Type_1 ,
         Type_2 ,
     } super_result ;
+
     bool isFinalHomo() const { 
         return trio_paired_result == TrioBinResult::TrioBinHomo ;
     }
+
     void SetHomeBySupernova( TrioBinResult type_1_eq ) {
         if ( ! isFinalHomo() ) return ;
         if ( super_result == Type_1 )
@@ -42,6 +44,7 @@ struct MergeIdsElement {
     }
 
     std::string line ;
+    float weight;
 };
 
 struct MergeIdsPair {
@@ -73,10 +76,21 @@ struct MergeIdsPair {
         if ( super_2.trio_paired_result == super_1.trio_paired_result ) {
             assert( super_2.trio_paired_result == MergeIdsElement::TrioBinResult::TrioBinHomo);
             assert( super_2.super_result != super_1.super_result );
-            super_1.SetHomeBySupernova(type_1_eq);
-            super_2.SetHomeBySupernova(type_1_eq);
+            if(  super_1.weight > super_2.weight ) {
+                assert( super_1.trio_result != MergeIdsElement::TrioBinResult::TrioBinHomo );
+                super_1.trio_paired_result = super_1.trio_result ;
+                super_2.trio_paired_result = MergeIdsElement::Oppo(super_1.trio_result);
+            } else if ( super_1.weight < super_2.weight ) {
+                assert( super_2.trio_result != MergeIdsElement::TrioBinResult::TrioBinHomo );
+                super_2.trio_paired_result = super_2.trio_result ;
+                super_1.trio_paired_result = MergeIdsElement::Oppo(super_2.trio_result);
+            } else {
+                super_1.SetHomeBySupernova(type_1_eq);
+                super_2.SetHomeBySupernova(type_1_eq);
+            }
         }
     }
+
     MergeIdsElement::TrioBinResult VoteSupernovaType1() const {
         return super_1.super_result == MergeIdsElement::SupernovaResult::Type_1 ? 
             super_1.trio_paired_result :
@@ -129,16 +143,22 @@ MergeIdsElement::TrioBinResult  CountSupernovaType1(){
     std::cerr<<" homo_fac "<<homo_fac<<std::endl;
     return  father_fac >= mother_fac ? MergeIdsElement::TrioBinFather : MergeIdsElement::TrioBinMother ;
 }
+
 void loadIds( const std::string & file_name , MergeIdsElement::TrioBinResult t) {
     auto in =  BGIQD::FILES::FileReaderFactory::GenerateReaderFromFileName(file_name);
     if( 0 == in ) FATAL("failed to open ids to read ");
     std::string line ;
     while( ! std::getline( *in , line ).eof() ) {
         BGIQD::APP::Scaff_Seg_Head tmp ;
-        tmp.Init(line);
+        std::istringstream ist(line);
+        std::string read_name ;
+        float weight ;
+        ist>>read_name>>weight;
+        tmp.Init(read_name);
         MergeIdsElement elem ;
         elem.trio_result = t ;
-        elem.line = line ;
+        elem.line = read_name ;
+        elem.weight = weight ;
         if( tmp.phase_id == 1 ){
             elem.super_result = MergeIdsElement::Type_1 ;
             data[tmp.scaff_id][tmp.seq_index].super_1 = elem ; 
@@ -168,7 +188,7 @@ void PrintFinalIds() {
     delete out2;
 }
 
-int main(int argc , char ** argv ){
+int main(int argc , char ** argv ) {
 
     START_PARSE_ARGS
         DEFINE_ARG_REQUIRED( std::string , prefix , "output prefix\n\
@@ -184,10 +204,10 @@ int main(int argc , char ** argv ){
 
     loadIds( father_ids.to_string() , MergeIdsElement::TrioBinResult::TrioBinFather) ;
     loadIds( mother_ids.to_string() , MergeIdsElement::TrioBinResult::TrioBinMother) ;
-    loadIds( homo_ids.to_string() , MergeIdsElement::TrioBinResult::TrioBinHomo) ;
+    loadIds( homo_ids.to_string()   , MergeIdsElement::TrioBinResult::TrioBinHomo) ;
 
     GenAllTrioBinPairedResult() ;
-    auto type_1_eq = CountSupernovaType1();
+    auto type_1_eq = CountSupernovaType1() ;
     SetAllHomo(type_1_eq);
 
     PrintFinalIds() ;
