@@ -1,3 +1,5 @@
+# This is  a copy of meryl from https://github.com/marbl/meryl
+
 # Meryl
 
 This is 'meryl', a near total rewrite of 'meryl' that appeared in both
