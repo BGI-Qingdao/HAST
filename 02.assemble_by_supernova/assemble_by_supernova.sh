@@ -134,8 +134,8 @@ cat $READ1 | gzip  >split_reads.1.fq.gz
 cat $READ2 | gzip  >split_reads.2.fq.gz
 
 # step 02 : generate barcode_freq.txt
-gzip -dc split_reads.1.fq.gz | awk '!(NR%4-1)' | awk -F '[# |]' '{print$2}' | awk -F '/' '{print $1}' | sort | uniq -c | awk '{printf("%s\t%s\n",$2,$1);}' > barcode_freq.txt
-
+#gzip -dc split_reads.1.fq.gz | awk '!(NR%4-1)' | awk -F '[# |]' '{print$2}' | awk -F '/' '{print $1}' | sort | uniq -c | awk '{printf("%s\t%s\n",$2,$1);}' > barcode_freq.txt
+gzip -dc split_reads.1.fq.gz |  awk -F '#|/' '{if(NR%4==1&&NF>1)t[$2]+=1}END{for(x in t ) printf("%s\t%s\n",x,t[x]);}' > barcode_freq.txt
 # mapping stLFR barcode into 10X Genomics
 $SCRIPT_PATH/merge_barcodes.pl barcode_freq.txt  $SUPERNOVA_WL merge.txt $MIN_READPAIR_IN_BARCODE  1> merge_barcode.log  2>merge_barcode.err || exit 1
 
