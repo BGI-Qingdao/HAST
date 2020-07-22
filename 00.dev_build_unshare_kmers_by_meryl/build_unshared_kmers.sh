@@ -39,7 +39,7 @@ function get_real_path(){
     local vv=""
     for x in $*
     do
-        real_p=`realpath $1`
+        real_p=`realpath $x`
         vv=$vv" "$real_p
     done
     echo $vv
