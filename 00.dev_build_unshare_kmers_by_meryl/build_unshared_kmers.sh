@@ -37,7 +37,7 @@ function usage(){
 
 function get_real_path(){
     local vv=""
-    for x in $1
+    for x in $*
     do
         real_p=`realpath $1`
         vv=$vv" "$real_p
