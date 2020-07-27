@@ -56,7 +56,7 @@ Example :
 
 # run HSAT for 10X Genomics Linked Reads 
 
-see https://github.com/BGI-Qingdao/HAST410GX
+see https://github.com/BGI-Qingdao/HAST410XG
 
 # run HAST for TGS long reads (PacBio or Nanopore)
 
