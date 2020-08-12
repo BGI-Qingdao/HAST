@@ -221,15 +221,15 @@ mkdir -p '03.maternal_output'
 cd '03.maternal_output'
 echo """
 $STEP3 --assembly_path '../02.maternal_assembly' \
-       --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
+       --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --prefix output \
        >03.maternal_output.log \
        2>03.maternal_output.err
 """
 $STEP3 --assembly_path '../02.maternal_assembly' \
-       --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --maternal_mer ../00.build_kmers/maternal.unique.filter.mer \
+       --paternal_mer ../00.build_kmers/paternal.unique.filter.mer \
        --prefix output \
        >03.maternal_output.log \
        2>03.maternal_output.err

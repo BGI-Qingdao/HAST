@@ -12,6 +12,11 @@ Options :
                                 please keep the prefix with assembly_by_supernova.sh ;
             --paternal_mer      paternal kmers ;
             --maternal_mer      maternal kmers ;
+
+                                NOTE : the order of paternal_mer and maternal_mer is meaningful.
+                                we will set the first [x]aterna_mer as primary output and second 
+                                [x]aterna_mer as secondary output.
+
             --thread            max threads ;
 
 Example :
@@ -32,7 +37,7 @@ SUPERNOVA_OUTPUT_DIR=""
 PATERNAL_KMERS=""
 MATERNAL_KMERS=""
 PREFIX="output"
-
+PREFER=''
 if [[ $# == 0 ]] ; then 
     usage
     exit 0
@@ -59,6 +64,9 @@ do
             ;;
         "--paternal_mer")
             PATERNAL_KMERS=$2
+            if [[ $PREFER == '' ]] ; then 
+                PREFER='paternal'
+            fi
             shift
             ;;
         "--thread")
@@ -67,6 +75,9 @@ do
             ;;
         "--maternal_mer")
             MATERNAL_KMERS=$2
+            if [[ $PREFER == '' ]] ; then 
+                PREFER='maternal'
+            fi
             shift
             ;;
         *)
@@ -85,6 +96,8 @@ echo "LOG  : input supernova result in $SUPERNOVA_OUTPUT_DIR"
 echo "LOG  : paternal kmers file is $PATERNAL_KMERS"
 echo "LOG  : maternal kmers file is $MATERNAL_KMERS"
 echo "LOG  : prefix is $PREFIX"
+echo "LOG  : prefer type is $PREFER"
+echo "NOTE : you can swtich the order of --paternel_mer and --maternel_mer to swtich prefer type"
 date
 
 if [[ ! -e $SUPERNOVA_OUTPUT_DIR/$PREFIX.1.fasta || \
@@ -121,5 +134,12 @@ $SCRIPT_PATH/bin/MergePhaseResult  --prefix ${PREFIX}  \
 # generate final fasta sequence
 $SCRIPT_PATH/bin/GenSq --prefix ${PREFIX} 
 
+if [[ $PREFER == "paternal" ]] ; then
+    ln -s ${PREFIX}.father.fa ${PREFIX}.primary.fa
+    ln -s ${PREFIX}.mather.fa ${PREFIX}.secondary.fa
+else 
+    ln -s ${PREFIX}.mather.fa ${PREFIX}.primary.fa
+    ln -s ${PREFIX}.father.fa ${PREFIX}.secondary.fa
+fi
 echo "LOG  : ALL DONE"
-echo "LOG  : final output is ${PREFIX}.father.fa and ${PREFIX}.mather.fa"
+echo "LOG  : final output is ${PREFIX}.primary.fa"
