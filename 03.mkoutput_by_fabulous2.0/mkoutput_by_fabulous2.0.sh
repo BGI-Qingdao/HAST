@@ -136,9 +136,9 @@ $SCRIPT_PATH/bin/GenSq --prefix ${PREFIX}
 
 if [[ $PREFER == "paternal" ]] ; then
     ln -s ${PREFIX}.father.fa ${PREFIX}.primary.fa
-    ln -s ${PREFIX}.mather.fa ${PREFIX}.secondary.fa
+    ln -s ${PREFIX}.mother.fa ${PREFIX}.secondary.fa
 else 
-    ln -s ${PREFIX}.mather.fa ${PREFIX}.primary.fa
+    ln -s ${PREFIX}.mother.fa ${PREFIX}.primary.fa
     ln -s ${PREFIX}.father.fa ${PREFIX}.secondary.fa
 fi
 echo "LOG  : ALL DONE"
