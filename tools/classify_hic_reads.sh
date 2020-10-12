@@ -22,9 +22,10 @@ function get_infos(){
     #     print($a[0],"\t",$a[1],"\t",1-($n-$g+$o)/($m+$o) ,"\t",($m+$o)-($n-$g+$o),  "\t",($m+$o),"\n")
     #}
     #else{
+    #     @a=split;
     #     print($a[0],"\t0\t0\t0\t0\n")
     #}'
-    grep -v "^@" $1 | cut -f 1,2,6,12 | perl -ane  'if(/NM:i:(\d+)/){ $n=$1;$m=$g=$o=0;$m+=$1 while/(\d+)M/g;$g+=$1,++$o while/(\d+)[ID]/g; chomp ;@a=split;print($a[0],"\t",$a[1],"\t",1-($n-$g+$o)/($m+$o) ,"\t",($m+$o)-($n-$g+$o),  "\t",($m+$o),"\n")} else{print($a[0],"\t0\t0\t0\t0\n")} '
+    grep -v "^@" $1 | cut -f 1,2,6,12 | perl -ane  'if(/NM:i:(\d+)/){ $n=$1;$m=$g=$o=0;$m+=$1 while/(\d+)M/g;$g+=$1,++$o while/(\d+)[ID]/g; chomp ;@a=split;print($a[0],"\t",$a[1],"\t",1-($n-$g+$o)/($m+$o) ,"\t",($m+$o)-($n-$g+$o),  "\t",($m+$o),"\n")} else{ @a=split; print($a[0],"\t0\t0\t0\t0\n")} '
 }
 
 function get_scores(){
