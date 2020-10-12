@@ -55,7 +55,9 @@ get_infos $R2SAM >r2.info
 get_scores r1.info >r1.scores
 get_scores r2.info >r2.scores
 
-join -o 1.1 2.1 1.2  2.2  -e 0 -a1 -a2 r1.scores r2.scores  >read.scores 2>join.err
+sort -k 1b,1 r1.scores >r1.sort.scores
+sort -k 1b,1 r2.scores >r2.sort.scores
+join -o 1.1 2.1 1.2  2.2  -e 0 -a1 -a2 r1.sort.scores r2.sort.scores  >read.scores 2>join.err
 
 #{
 #   if($1==0)
