@@ -3,6 +3,7 @@
 
 if [[ $# != 2 ]] ; then
     echo "usage: ./classify_hic_reads.sh <r1.sam> <r2.sam>"
+    echo "notice:  do not sort the sam !"
     exit
 fi
 
