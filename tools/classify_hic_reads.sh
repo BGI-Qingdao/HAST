@@ -2,13 +2,13 @@
 
 
 if [[ $# != 2 ]] ; then
-    echo "usage: ./classify_hic_reads.sh <r1.sam> <r2.sam>"
+    echo "usage: ./classify_hic_reads.sh <pat.sam> <mat.sam>"
     echo "notice:  do not sort the sam !"
     exit
 fi
 
-R1SAM=$1
-R2SAM=$2
+PATSAM=$1
+MATSAM=$2
 
 function get_infos(){
     printf "read-name\tflag\tidy\texact-match-len\ttotal-match-len\n"
@@ -54,8 +54,8 @@ function get_scores(){
     awk 'BEGIN{name="";score=0;}{ if(NR>1){ n=$1; if(n!=name && name!=""){printf("%s\t%f\n",name,score);score=0;} name=n;if($2<256&& $2>0){score+=(3*(log($3)/log(10))+(log($5)/log(10)) );} } }' $1
 }
 
-get_infos $R1SAM >r1.info
-get_infos $R2SAM >r2.info
+get_infos $PATSAM >r1.info
+get_infos $MATSAM >r2.info
 
 get_scores r1.info >r1.scores
 get_scores r2.info >r2.scores
