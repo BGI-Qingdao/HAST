@@ -28,7 +28,7 @@ void PrintUsage(){
 std::cerr<<"\n\
  Brief   : Merge two haplotype vcf and print all SNP in two alleles style.\n\
 \n\
- Notice  : I only use chr1-chr22 and I will change CHROM from chr1 to 1.\n\
+ Notice  : I only use chr1-chr22.\n\
 \n\
  Usage   : \n\
    ./MergeHapSNP  H1.vcf H2.vcf >paired_snp.txt\n\
@@ -137,7 +137,8 @@ struct VI {
         }
         auto datas=split(items[9],':');
         gt_str = datas[0];
-        phased_id= datas[1];
+        if( datas.size() > 1) 
+            phased_id= datas[1];
         if( datas[0] == "0|1" || datas[0] == "0/1" ||  datas[0] == "1|0" ||  datas[0] == "1/0" ) {
             htype =V_HType::type_0_1;
         }
@@ -238,13 +239,13 @@ bool isNewHAPSNP(const VI & vi) {
     return false ;
 }
 void AddNewHapSNP( const VI & vi , std::string N2) {
-    all_hapsnps[vi.ref_name][vi.pos].ref_name = vi.refName_no_chr();
+    all_hapsnps[vi.ref_name][vi.pos].ref_name = vi.ref_name;
     all_hapsnps[vi.ref_name][vi.pos].pos = vi.pos ;
     all_hapsnps[vi.ref_name][vi.pos].alt1 = vi.alt1 ;
     all_hapsnps[vi.ref_name][vi.pos].alt2 = N2 ;
 }
 
-void UpdateHapSNP( const VI & vi , std::map<std::string , std::map<int , VI>  >  another){
+void UpdateHapSNP( const VI & vi ,const std::map<std::string , std::map<int , VI>  > & another){
     if( ! isNewHAPSNP(vi) ) return ; 
     if( another.find(vi.ref_name) == another.end() ) {
         AddNewHapSNP(vi, vi.ref);
