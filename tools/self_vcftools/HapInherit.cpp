@@ -114,6 +114,7 @@ std::string V_HType_ToStr(V_HType t){
 	if(t==V_HType::type_0_1) return "0_1";
 	if(t==V_HType::type_1_1) return "1_1";
 	if(t==V_HType::type_1_2) return "1_2";
+    return "unknow";
 }
 
 enum V_Type {
@@ -126,6 +127,7 @@ std::string V_Type_ToStr(V_Type t){
 	if( t == V_Type::isSNP ) return "SNP" ;
 	if( t == V_Type::isInDel ) return "InDel" ;
 	if( t == V_Type::isSV ) return "SV" ;
+    return "unknow";
 }
 
 // Variant Information

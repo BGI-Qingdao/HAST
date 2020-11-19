@@ -1,6 +1,6 @@
 .PHONY: all
 
-all: HapInherit	GetSNPOnly 	InheritSolidSNP	PhasedSNP
+all: HapInherit	GetSNPOnly 	InheritSolidSNP	PhasedSNP MergeHapSNP
 
 HapInherit: HapInherit.cpp
 	g++ -g -Werror -std=c++11 HapInherit.cpp -o HapInherit
@@ -13,3 +13,6 @@ InheritSolidSNP:	InheritSolidSNP.cpp
 
 PhasedSNP: PhasedSNP.cpp
 	g++ -g -Werror -std=c++11 PhasedSNP.cpp -o PhasedSNP
+
+MergeHapSNP : MergeHapSNP.cpp
+	g++ -g -Werror -std=c++11 MergeHapSNP.cpp -o MergeHapSNP
