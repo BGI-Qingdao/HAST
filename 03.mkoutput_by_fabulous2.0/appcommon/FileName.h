@@ -50,8 +50,10 @@ namespace BGIQD {
             //Merge output
             DEFINE_SUFFIX(merge_father_ids,".merge.father.ids");
             DEFINE_SUFFIX(merge_mother_ids,".merge.mother.ids");
+            DEFINE_SUFFIX(merge_homo_ids,".merge.homo.ids");
             //Gen output
             DEFINE_SUFFIX(father_fa,".father.fa");
+            DEFINE_SUFFIX(supplement_fa,".supplement.fa");
             DEFINE_SUFFIX(mother_fa,".mother.fa");
             DEFINE_SUFFIX(father_idx,".father.idx");
             DEFINE_SUFFIX(mother_idx,".mother.idx");

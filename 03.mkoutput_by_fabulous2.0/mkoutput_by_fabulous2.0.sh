@@ -132,14 +132,23 @@ $SCRIPT_PATH/bin/MergePhaseResult  --prefix ${PREFIX}  \
               --homo_ids ${PREFIX}.phb.12.ambiguous.idx
 
 # generate final fasta sequence
-$SCRIPT_PATH/bin/GenSq --prefix ${PREFIX} 
+
+if [[ $PREFER == "paternal" ]] ; then
+    $SCRIPT_PATH/bin/GenSq --prefix ${PREFIX} --prefer 'pat'
+else
+    $SCRIPT_PATH/bin/GenSq --prefix ${PREFIX} --prefer 'mat'
+fi
 
 if [[ $PREFER == "paternal" ]] ; then
     ln -s ${PREFIX}.father.fa ${PREFIX}.primary.fa
-    ln -s ${PREFIX}.mother.fa ${PREFIX}.secondary.fa
+    if [[ -e ${PREFIX}.mother.fa ]] ; then
+        ln -s ${PREFIX}.mother.fa ${PREFIX}.secondary.fa
+    fi
 else 
     ln -s ${PREFIX}.mother.fa ${PREFIX}.primary.fa
-    ln -s ${PREFIX}.father.fa ${PREFIX}.secondary.fa
+    if [[ -e ${PREFIX}.father.fa ]] ; then
+        ln -s ${PREFIX}.father.fa ${PREFIX}.secondary.fa
+    fi
 fi
 echo "LOG  : ALL DONE"
 echo "LOG  : final output is ${PREFIX}.primary.fa"

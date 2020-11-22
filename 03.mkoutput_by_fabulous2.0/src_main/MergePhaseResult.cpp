@@ -12,6 +12,9 @@
 #include <string>
 #include <sstream>
 #include <cassert>
+#include <set>
+
+std::set<std::string> final_homo_ids;
 
 struct MergeIdsElement {
     enum TrioBinResult {
@@ -72,7 +75,7 @@ struct MergeIdsPair {
         }
     }
 
-    void SetHomeBySupernova(  MergeIdsElement::TrioBinResult type_1_eq ) {
+    bool SetHomeBySupernova(  MergeIdsElement::TrioBinResult type_1_eq ) {
         if ( super_2.trio_paired_result == super_1.trio_paired_result ) {
             assert( super_2.trio_paired_result == MergeIdsElement::TrioBinResult::TrioBinHomo);
             assert( super_2.super_result != super_1.super_result );
@@ -80,15 +83,19 @@ struct MergeIdsPair {
                 assert( super_1.trio_result != MergeIdsElement::TrioBinResult::TrioBinHomo );
                 super_1.trio_paired_result = super_1.trio_result ;
                 super_2.trio_paired_result = MergeIdsElement::Oppo(super_1.trio_result);
+                return false;
             } else if ( super_1.weight < super_2.weight ) {
                 assert( super_2.trio_result != MergeIdsElement::TrioBinResult::TrioBinHomo );
                 super_2.trio_paired_result = super_2.trio_result ;
                 super_1.trio_paired_result = MergeIdsElement::Oppo(super_2.trio_result);
+                return false;
             } else {
                 super_1.SetHomeBySupernova(type_1_eq);
                 super_2.SetHomeBySupernova(type_1_eq);
+                return true;
             }
         }
+        return false;
     }
 
     MergeIdsElement::TrioBinResult VoteSupernovaType1() const {
@@ -116,9 +123,13 @@ void GenAllTrioBinPairedResult(){
             pair2.second.GenTrioBinPairedResult();
 }
 void SetAllHomo(MergeIdsElement::TrioBinResult t){
-    for( auto & pair : data ) 
-        for( auto & pair2 : pair.second ) 
-            pair2.second.SetHomeBySupernova(t);
+    for( auto & pair : data ) {
+        for( auto & pair2 : pair.second ) {
+            if( pair2.second.SetHomeBySupernova(t) ) {
+                final_homo_ids.insert(pair2.second.super_1.line);
+            }
+        }
+    }
 }
 
 MergeIdsElement::TrioBinResult  CountSupernovaType1(){
@@ -188,6 +199,15 @@ void PrintFinalIds() {
     delete out2;
 }
 
+void PrintHomoIds(){
+    auto out1 = BGIQD::FILES::FileWriterFactory
+        ::GenerateWriterFromFileName(fNames.merge_homo_ids());
+    if( 0 == out1 ) FATAL("failed to open xxx.merge.homo.ids to write");
+    for( auto & name : final_homo_ids) 
+        (*out1)<<name<<'\n';
+    delete out1;
+}
+
 int main(int argc , char ** argv ) {
 
     START_PARSE_ARGS
@@ -210,7 +230,7 @@ int main(int argc , char ** argv ) {
     auto type_1_eq = CountSupernovaType1() ;
     SetAllHomo(type_1_eq);
 
-    PrintFinalIds() ;
-
+    PrintFinalIds();
+    PrintHomoIds();
     return 0 ;
 }

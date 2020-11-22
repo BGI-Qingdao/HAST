@@ -9,6 +9,11 @@ namespace BGIQD {
     namespace APP {
         struct Scaff_Seg_Head
         {
+            bool operator<( const Scaff_Seg_Head & a ) const {
+                if( scaff_id < a.scaff_id ) return true ;
+                if( scaff_id >a.scaff_id ) return false ;
+                return  phase_id < a.phase_id ;
+            }
             unsigned int scaff_id;
 
             int  seq_index ; // index start from 0 

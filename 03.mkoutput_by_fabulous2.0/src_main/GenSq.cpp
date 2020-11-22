@@ -28,14 +28,14 @@ enum PhasedResult {
 } phased_result ;
 
 struct IBlock {
-    virtual BGIQD::SEQ::seq getSeq(PhasedResult type) const = 0 ;
+    virtual const BGIQD::SEQ::seq *getSeq(PhasedResult type) const = 0 ;
     virtual ~IBlock() {} ;
 };
 
 struct HomoBlock : public IBlock {
     FA * block ;
-    virtual BGIQD::SEQ::seq getSeq(PhasedResult /**type**/ ) const final {
-        return block->seq;
+    virtual const BGIQD::SEQ::seq *getSeq(PhasedResult /**type**/ ) const final {
+        return &(block->seq);
     }
     virtual ~HomoBlock() final {}
 };
@@ -43,8 +43,8 @@ struct HomoBlock : public IBlock {
 struct PhasedBlock : public IBlock {
     FA * father_block;
     FA * mother_block;
-    virtual BGIQD::SEQ::seq getSeq(PhasedResult type ) const final {
-        return type == PhasedResult::Father ? father_block->seq : mother_block->seq;
+    virtual const BGIQD::SEQ::seq * getSeq(PhasedResult type ) const final {
+        return type == PhasedResult::Father ? &(father_block->seq) : &(mother_block->seq);
     }
     virtual ~PhasedBlock() final {}
 };
@@ -72,22 +72,21 @@ struct NewScaff {
             return dynamic_cast<PhasedBlock*>(blocks.at(block_id)); 
         }
     }
-    BGIQD::SEQ::seq  getSeq( PhasedResult type , std::vector<int> & idx ) const{
-        BGIQD::SEQ::seq ret ;
+    void getSeq( PhasedResult type , std::vector<int> & idx, BGIQD::SEQ::seq & ret ) const{
+        assert(ret.atcgs.empty());
         assert(idx.empty());
         idx.push_back(0);
         assert(blocks.size() %2 == 1 );
         for( int i = 0 ; i < (int)blocks.size() ; i ++ ) {
             try {
                 const IBlock * block_ptr = blocks.at(i) ;
-                ret.AddPartSeq(block_ptr->getSeq(type).atcgs);
+                ret.AddPartSeq(block_ptr->getSeq(type)->atcgs);
                 idx.push_back(ret.Len());
             }catch(...){
                 std::cerr<<"some blocks was missing for scaff_id = "<<id<<" and block_id = "<<i<<std::endl;
                 FATAL("block not exsit !!!");
             }
         }
-        return ret;
     }
     ~NewScaff() {
         for( const auto & pair : blocks ) 
@@ -105,7 +104,8 @@ BGIQD::APP::FileNames fNames;
 //       scaff_id,      block_id,      phase_id ,fa
 std::map<unsigned int , std::map<int , std::map< int ,FA > > > phb_chace ;
 std::map<unsigned int , NewScaff> scaffs ;
-
+std::map<SEGHEAD,BGIQD::SEQ::seq *> supplement_seqs;
+std::string prefered_name ;
 ///////////////////////////////////////////////////////////
 // functions 
 ///////////////////////////////////////////////////////////
@@ -186,47 +186,88 @@ void BuildPhasedBlocks() {
 
 void PrintFinalDatas() {
     std::map<unsigned int , std::vector<int>> idx_chace ;
-    auto out1 = BGIQD::FILES::FileWriterFactory
-        ::GenerateWriterFromFileName(fNames.father_fa());
-    if( 0 == out1 ) FATAL("failed to open xxx.father.fa to write");
-    for( const auto & pair : scaffs ) {
-        (*out1)<<'>'<<pair.first<<'\n';
-        std::vector<int> idx;
-        auto seq = pair.second.getSeq(PhasedResult::Father,idx);        
-        (*out1)<<seq.Seq(80);
-        idx_chace[pair.first]=idx;
+    if( prefered_name == "pat" ) {
+        auto out1 = BGIQD::FILES::FileWriterFactory
+            ::GenerateWriterFromFileName(fNames.father_fa());
+        if( 0 == out1 ) FATAL("failed to open xxx.father.fa to write");
+        for( const auto & pair : scaffs ) {
+            (*out1)<<'>'<<pair.first<<'\n';
+            std::vector<int> idx;
+            BGIQD::SEQ::seq seq ;
+            pair.second.getSeq(PhasedResult::Father,idx,seq);
+            (*out1)<<seq.Seq(80);
+            idx_chace[pair.first]=idx;
+        }
+        delete out1;
+        auto out2 = BGIQD::FILES::FileWriterFactory
+            ::GenerateWriterFromFileName(fNames.father_idx());
+        if( 0 == out2 ) FATAL("failed to open xxx.father.idx to write");
+        for( const auto & idx : idx_chace ) {
+            (*out2)<<idx.first ;
+            for( int i : idx.second) (*out2)<<' '<<i;
+            (*out2)<<'\n';
+        }
+        delete out2;
+        idx_chace.clear();
+    } else {
+        auto out3 = BGIQD::FILES::FileWriterFactory
+            ::GenerateWriterFromFileName(fNames.mother_fa());
+        if( 0 == out3 ) FATAL("failed to open xxx.mother.fa to write");
+        for( const auto & pair : scaffs ) {
+            (*out3)<<'>'<<pair.first<<'\n';
+            std::vector<int> idx;
+            BGIQD::SEQ::seq seq ;
+            pair.second.getSeq(PhasedResult::Mother,idx,seq);
+            (*out3)<<seq.Seq(80);
+            idx_chace[pair.first]=idx;
+        }
+        delete out3;
+        auto out4 = BGIQD::FILES::FileWriterFactory
+            ::GenerateWriterFromFileName(fNames.mother_idx());
+        if( 0 == out4 ) FATAL("failed to open xxx.mother.idx to write");
+        for( const auto & idx : idx_chace ) {
+            (*out4)<<idx.first ;
+            for( int i : idx.second) (*out4)<<' '<<i;
+            (*out4)<<'\n';
+        }
+        delete out4;
     }
-    delete out1;
-    auto out2 = BGIQD::FILES::FileWriterFactory
-        ::GenerateWriterFromFileName(fNames.father_idx());
-    if( 0 == out2 ) FATAL("failed to open xxx.father.idx to write");
-    for( const auto & idx : idx_chace ) {
-        (*out2)<<idx.first ;
-        for( int i : idx.second) (*out2)<<' '<<i;
-        (*out2)<<'\n';
-    }
-    delete out2;
-    idx_chace.clear();
-    auto out3 = BGIQD::FILES::FileWriterFactory
-        ::GenerateWriterFromFileName(fNames.mother_fa());
-    if( 0 == out3 ) FATAL("failed to open xxx.mother.fa to write");
-    for( const auto & pair : scaffs ) {
-        (*out3)<<'>'<<pair.first<<'\n';
-        std::vector<int> idx;
-        auto seq = pair.second.getSeq(PhasedResult::Mother,idx);        
-        (*out3)<<seq.Seq(80);
-        idx_chace[pair.first]=idx;
-    }
-    delete out3;
+}
+
+void PrintFinalUnphasedData(){
     auto out4 = BGIQD::FILES::FileWriterFactory
-        ::GenerateWriterFromFileName(fNames.mother_idx());
-    if( 0 == out4 ) FATAL("failed to open xxx.mother.idx to write");
-    for( const auto & idx : idx_chace ) {
-        (*out4)<<idx.first ;
-        for( int i : idx.second) (*out4)<<' '<<i;
-        (*out4)<<'\n';
+        ::GenerateWriterFromFileName(fNames.supplement_fa());
+    if( 0 == out4 ) FATAL("failed to open xxx.supplement.fa to write");
+    for( const auto & pair : supplement_seqs){
+        const auto & segname = pair.first;
+        const auto & seq = *pair.second ;
+        (*out4)<<">scaff_"<<segname.scaff_id<<"_segment_"<<segname.seq_index<<'\n';
+        (*out4)<<seq.Seq(80);
     }
     delete out4;
+}
+
+void BuildUnphasedBlocks(){
+    // load xxx.merge.homo.ids
+    auto in1 =  BGIQD::FILES::FileReaderFactory
+        ::GenerateReaderFromFileName(fNames.merge_homo_ids());
+    if( 0 == in1 ) FATAL("failed to open xxx.merged.homo.ids to read ");
+    std::string line ;
+    while( ! std::getline((*in1) , line ).eof() ) {
+        BGIQD::APP::Scaff_Seg_Head tmp ;
+        tmp.Init(line);
+        try {
+            PhasedBlock * pptr = scaffs.at(tmp.scaff_id).getPhasedPtr(tmp.seq_index);
+            if( prefered_name == "pat" )
+                supplement_seqs[tmp] = & pptr->mother_block->seq;
+            else
+                supplement_seqs[tmp] = & pptr->father_block->seq;
+        } catch (...) {
+            std::cerr<<"some blocks was missing for scaff_id = "<<tmp.scaff_id<<" and block_id = "<<tmp.seq_index<<std::endl;
+            FATAL("block not exsit !!!");
+        }
+    }
+    delete in1;
 }
 
 ///////////////////////////////////////////////////////////
@@ -241,19 +282,26 @@ int main(int argc , char ** argv) {
                                                             xxx.phb.2.fa\n\
                                                             xxx.merge.father.ids\n\
                                                             xxx.merge.mother.ids\n\
+                                                            xxx.merge.homo.ids\n\
                                                         will output: \n\
                                                             xxx.father.fa\n\
                                                             xxx.mother.fa\n\
                                                             xxx.father.idx\n\
                                                             xxx.mother.idx");
+    DEFINE_ARG_REQUIRED(std::string, prefer , "the prefered branch name. pat or mat");
     END_PARSE_ARGS;
 
     fNames.Init(prefix.to_string()) ;
-
+    prefered_name = prefer.to_string();
+    if( prefered_name != "pat" && prefered_name != "mat" ){
+        std::cerr<<"invalid argument! prefer is not pat && not mat! exit ..."<<std::endl;
+        exit(1);
+    }
     LoadFas();
     BuildHomeBlocs();
     BuildPhasedBlocks();
     PrintFinalDatas();
-
+    BuildUnphasedBlocks();
+    PrintFinalUnphasedData();
     return 0 ;
 }
