@@ -215,9 +215,9 @@ int main(int argc , char ** argv ) {
                 will output: \n\
                 xxx.merge.father.ids\n\
                 xxx.merge.mother.ids");
-    DEFINE_ARG_REQUIRED( std::string , father_ids , "father_ids from triobin output");
-    DEFINE_ARG_REQUIRED( std::string , mother_ids , "father_ids from triobin output");
-    DEFINE_ARG_REQUIRED( std::string , homo_ids , "father_ids from triobin output");
+    DEFINE_ARG_REQUIRED( std::string , father_ids , "phb12.father_idx from triobin output");
+    DEFINE_ARG_REQUIRED( std::string , mother_ids , "phb12.mother_idx from triobin output");
+    DEFINE_ARG_REQUIRED( std::string , homo_ids , "phb12.homo_idx from triobin output");
     END_PARSE_ARGS;
 
     fNames.Init(prefix.to_string());

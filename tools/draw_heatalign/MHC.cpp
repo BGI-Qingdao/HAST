@@ -6,9 +6,44 @@
 #include <fstream>
 #include <cassert>
 
+/*******************************************************************************
+ *
+ * Global variables and magic numbers
+ *
+ *******************************************************************************/
+
+const int total_colors = 10;
+const std::string colors1[total_colors] = { "lime","aqua","darkcyan","lawngreen","navy","olive","deepskyblue","indigo","dodgerblue","greenyellow"};
+const std::string colors2[total_colors] = { "darkorange","gold","deeppink","crimson","sandybrown","purple","firebrick", "peru","violet","salmon"};
+
+const std::string heatcolors[11] = {
+                              "rgba(253,254,191,0.90)" 
+                            , "rgba(249,226,123,0.90)"
+                            , "rgba(252,191,84, 0.90)"
+                            , "rgba(246,159,95, 0.90)"
+                            , "rgba(231,133,117,0.90)"
+                            , "rgba(207,115,136,0.90)"
+                            , "rgba(180,103,149,0.90)"
+                            , "rgba(151,93 ,154,0.90)"
+                            , "rgba(122,83 ,149,0.90)"
+                            , "rgba(92, 85 ,117,0.90)"
+                            , "rgba(77, 77 ,79 ,0.90)"
+};
+
+const int scale_len = 5000000;
+const int scale_step = 200000;
+const int scale_lable_step=1000000;
+const float min_idy = 0.89;
+const std::string ref_name("GRCH38 MHC");
+/*******************************************************************************
+ *
+ * Structure and functions 
+ *
+ *******************************************************************************/
+
 void PrintUsage(){
     std::cerr<<"Usage :"<<std::endl;
-    std::cerr<<"    draw_heatalign graph_name ref_len ref_shift -i H1.align.txt [-i H2.align.txt] ... [-g genes.txt] "<<std::endl;
+    std::cerr<<"    draw_heatalign ref_len -i H1.align.txt [-i H2.align.txt] ... [-g genes.txt] "<<std::endl;
     std::cerr<<std::endl;
     std::cerr<<"Input description   :"<<std::endl;
     std::cerr<<"    xxx.align.txt"<<std::endl;
@@ -31,27 +66,11 @@ bool parse_align_file_name(const std::string & line, std::string & name) {
     return true;
 }
 
-int total_colors = 4;
-std::string colors1[4] = { "lime","aqua","lawngreen","greenyellow" };
-std::string colors2[4] = { "orange","orangered","sandybrown","salmon" };
-
-std::string heatcolors[11] = {"rgba(253,254,191,0.75)" 
-                            , "rgba(249,226,123,0.75)"
-                            , "rgba(252,191,84, 0.75)"
-                            , "rgba(246,159,95, 0.75)"
-                            , "rgba(231,133,117,0.75)"
-                            , "rgba(207,115,136,0.75)"
-                            , "rgba(180,103,149,0.75)"
-                            , "rgba(151,93 ,154,0.75)"
-                            , "rgba(122,83 ,149,0.75)"
-                            , "rgba(92, 85 ,117,0.75)"
-                            , "rgba(77, 77 ,79,0.75)"
-};
-
 struct SVG_Align {
     static int graph_width;
     static int graph_height;
     static int ref_len ;
+    static int align_num;
     static float scale ;
 
     static void PrintHeader(){
@@ -64,20 +83,14 @@ struct SVG_Align {
         std::cout<<R"(</svg>)"<<'\n';
     }
 
-    static void Init( int align_num , bool gene , int rl){
-        graph_width = 900;
-        graph_height = 50 + ( int((align_num-1)/2) +1 ) * 100 + 100 +(gene ? 50 : 0);
+    static void Init( int alignnum , int rl){
+        align_num=alignnum;
+        graph_width = 1200;
+        graph_height =  ( int((align_num-1)/2) +1 ) * 120 + 100 ;
         /******************************************************
-         *   margin --> 10 pixel
-         *   title --> 30 pixel
-         *   scale --> 9 pixel
-         *   a pair of alignment --> 50 pixel
-         *      5 pixel query * 2
-         *      6 pixel ref
-         *      17 pixel aligned rect * 2
-         *
-         *   gene names --> 50 pixel
-         *
+         *   a pair of alignment --> 100 pixel
+         *   upper margin and heatcolor --> 50 pixel
+         *   bottom margin and scale    --> 50 pixel
          ******************************************************/
         ref_len = rl;
         scale = float(800) / float(ref_len);
@@ -89,7 +102,7 @@ struct SVG_Align {
     }
 
     static float y_in_ref( int align_index ) {
-        return 50 + (((align_index-1)/2) +1)*100;
+        return  (((align_index-1)/2) +1)*120;
     }
 
     static float y_in_ref_rect(int align_index ) {
@@ -109,24 +122,81 @@ struct SVG_Align {
         return y_in_ref(align_index)+47;
     }
 
-    static void PrintTitle(const std::string & title){
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="165" y="14">)"<<title<<R"(</text>)"<<'\n';
+    static float y_scale(){
+        return y_in_ref(align_num) + 60;
     }
 
-    static void PrintScale(int ref_shift){
+    //static void PrintTitle(const std::string & title){
+    //    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="165" y="14">)"<<title<<R"(</text>)"<<'\n';
+    //}
 
+    static void PrintRefName(const std::string & name, int align_index){
+        int y = y_in_ref(align_index) - 6;
+        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
+    }
+    static void PrintQueryName(const std::string & name, int align_index){
+        int y = y_in_query(align_index);
+        if(align_index %2 == 1 )
+            y += 15;
+        else 
+            y -= 6 ;
+        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
     }
 
-    static void PrintGeneText(const std::map<int,std::string> &genes, int align_index){
+    static void PrintScale(){
+        int y = y_scale();
+        std::cout<<R"(<line fill="black" stroke="black" stroke-width="1" x1="30" x2="870" y1=")"<<y<<R"(" y2=")"<<y<<R"(" />)"<<'\n';
+        for(int pos =0 ; pos <=scale_len; pos += scale_step){
+            int x=x_pos(pos);
+            int y1 ;
+            if( pos % scale_lable_step == 0 )
+                y1 = y+5;
+            else
+                y1 = y+3;
 
+            std::cout<<R"(<line fill="black" stroke="black" stroke-width="1" x1=")"<<x<<R"(" x2=")"<<x<<R"(" y1=")"<<y<<R"(" y2=")"<<y1<<R"(" />)"<<'\n';
+            if( pos % scale_lable_step == 0 ) {
+                int xx = pos / scale_lable_step;
+                std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<R"( Mb </text>)"<<'\n';
+            }
+        }
     }
+
+    static void PrintGeneText(const std::map<int,std::string> &genes){
+        int index = 0;
+        int y = y_in_ref(align_num) ;
+        for( const auto & pair : genes ){
+            index ++ ;
+            int x = x_pos(pair.first);
+            if( pair.second.size() <3 ){
+                if( index %2 ==1 ){
+                    int y1 =y+13 ;
+                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
+                } else {
+                    int y1 =y-5;
+                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
+                }
+            } else {
+                if( index %2 ==1 ){
+                    int y1 =y+8 ;
+                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
+                } else {
+                    int y1 =y-5;
+                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(-60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
+                }
+            }
+        }
+    }
+
     static void PrintGenePoint(const std::map<int,std::string> &genes, int align_index){
-
+        for( const auto & pair : genes ){
+            PrintPointInRef(pair.first , align_index);
+        }
     }
 
     static void PrintRefLine( int align_index ){
          int y=y_in_ref(align_index);
-         std::cout<<R"(<line fill="blue" stroke="blue" stroke-width="3" x1="50" x2="850" y1=")"<<y<<R"(" y2=")"<<y<<R"(" />)"<<'\n';
+         std::cout<<"<line fill=\"rgb(112,173,71)\" stroke=\"rgb(112,173,71)\""<<R"( stroke-width="3" x1="50" x2="850" y1=")"<<y<<R"(" y2=")"<<y<<R"(" />)"<<'\n';
     }
 
     static void PrintBorder(){
@@ -134,10 +204,22 @@ struct SVG_Align {
         std::cout<<R"( style="fill:rgb(255,255,255);stroke-width:1;stroke:rgb(0,0,0)"<<")\"/>\n";
     }
 
-    static const std::string & query_color( int align_index ,int color_index ) {
-        if( align_index %2 == 0 ) return colors1[(align_index/2 + color_index)%total_colors];
-        return colors2[color_index%total_colors];
+    static std::string  query_color( int align_index ,int /*color_index*/ ) {
+        if( align_index %2 == 1 ) return "rgb(237,125,49)"; // colors1[(align_index/2 + color_index)%total_colors];
+        return "rgb(91,155,213)";  // colors2[(align_index/2 + color_index)%total_colors];
     }
+
+    static void PrintPointInRef(int pos , int align_index ){
+        int x=x_pos(pos);
+        int y=y_in_ref(align_index);
+        std::cout<<R"(<circle cx=")"<<x<<R"(" cy=")"<<y<<R"(" r="1" stroke="black" stroke-width="1" fill="black" />)"<<'\n';
+    };
+
+    static void PrintPointInQuery(int pos , int align_index){
+        int x=x_pos(pos);
+        int y=y_in_query(align_index);
+        std::cout<<R"(<circle cx=")"<<x<<R"(" cy=")"<<y<<R"(" r="2" stroke="black" stroke-width="2" fill="black" />)"<<'\n';
+    };
 
     static void PrintQueryLine(int start , int end, int align_index ,int color_index) {
         int x1 = x_pos(start) ;int x2 = x_pos(end) ;
@@ -155,18 +237,30 @@ struct SVG_Align {
         float y_ref = y_in_ref_rect(align_index);
         float y_query = y_in_query_rect(align_index);
         std::string color;
-        if( idy < 0.8 ) color = heatcolors[10];
-        else color = heatcolors[int((1.0-idy)*50)];
+        // TODO :
+        if( idy < 0.89 ) color = heatcolors[10];
+        if( idy == 1 )  color = heatcolors[0];
+        else color = heatcolors[99-int(idy*100)];
         //std::string color = "rgv"
         std::cout<<R"(<polygon points=")"<<x_r_start<<','<<y_ref<<' ';
         std::cout<<x_r_end<<','<<y_ref<<' ';
         std::cout<<x_q_end<<','<<y_query<<' ';
         std::cout<<x_q_start<<','<<y_query<<"\" ";
-        std::cout<<R"(style="fill:)"<<color<<R"(;stroke:none;stroke-width:1;" />)"<<'\n';
+        std::cout<<R"(style="fill:)"<<color<<R"(;stroke:)"<<color<<R"(;stroke-width:1;" />)"<<'\n';
     }
 
-    static void PrintQueryName( const std::string & name , int align_index){
-
+    //
+    static void PrintHeatBar(){
+        int y = 15;
+        for( int i = 0 ; i<=10 ; i++ ) {
+            int x = 100+i*15;
+            std::string color=heatcolors[i];
+            std::cout<<R"(<rect width=")"<<15<<R"(" height=")"<<15<<R"(" x=")"<<x<<R"(" y=")"<<y<<R"(" )";
+            std::cout<<R"(style="fill:)"<<color<<R"(;stroke:)"<<color<<R"(;stroke-width:1;" />)"<<'\n';
+        }
+        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="100" y=")"<<45<<R"(">)"<<"0%"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="250" y=")"<<45<<R"(">)"<<"10%"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="275" y=")"<<25<<R"(">)"<<"Est.difference"<<R"(</text>)"<<'\n';
     }
 };
 
@@ -174,6 +268,7 @@ struct SVG_Align {
 int SVG_Align::graph_width;
 int SVG_Align::graph_height;
 int SVG_Align::ref_len ;
+int SVG_Align::align_num;
 float SVG_Align::scale ;
 
 
@@ -209,13 +304,13 @@ struct AlignBlock {
         if( det >= 7 ) {
             char o;
             ist>>ref_name>>ref_start>>ref_end>>query_name>>query_start>>query_end>>o>>idy;
-            assert(query_start < query_end );
             if(o == '+' ) {
                 orient = true ;
             } 
             else {
                 orient = false ;
-                std::swap(query_start,query_end);
+                if( query_start < query_end )
+                    std::swap(query_start,query_end);
             }
         }
     }
@@ -287,13 +382,14 @@ struct QuerySeq {
 
         void PrintAlignRect(int align_index) const {
             for(const auto & block : blocks) {
-                if( block.maped_len() < 500 ) continue ;
                 SVG_Align::PrintMapRect(block.ref_start,block.ref_end,
                         pos_in_line(block.query_start) ,
                         pos_in_line(block.query_end) ,
                         align_index,
                         block.idy);
             }
+            //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_max),align_index);
+            //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_min),align_index);
         }
         bool orient;
         void DetectOrient() {
@@ -329,24 +425,26 @@ struct Query {
         std::cerr<<"loading data from "<<filename<<std::endl;
         std::string line;
         std::string curr_query_name;
+        int low_idy = 0;
         while( ! std::getline(ifs,line).eof() ){
             AlignBlock block ;
             block.InitFromString(line);
+            if(block.idy<min_idy || std::abs(block.ref_end) -std::abs(block.ref_start) < 2000) { low_idy++ ; continue ;}
             if( curr_query_name == ""  || curr_query_name != block.query_name){
                 curr_query_name = block.query_name;
                 FlushLastSeq();
                 seqs.push_back(QuerySeq());
                 seqs.at(seqs.size()-1).seq_name = curr_query_name;
             }
-            else {
-                assert(seqs.size()>0);
-                seqs.at(seqs.size()-1).AddBlock(block);
-            }
+            assert(seqs.size()>0);
+            seqs.at(seqs.size()-1).AddBlock(block);
         }
         FlushLastSeq();
         for( auto & seq : seqs )
             seq.DetectOrient();
+        std::cerr<<"filter "<<low_idy<<" low idy maps by min_idy="<<min_idy<<std::endl;
         std::cerr<<"loading data end with "<<seqs.size()<<" query sequence(s)."<<std::endl;
+        ifs.close();
     }
     void PrintQueryLine() const {
         int color_index = 0 ;
@@ -363,29 +461,49 @@ struct Query {
     }
 };
 
-void  LoadGenes(const std::string & f) {
-
+void LoadGenes(const std::string & fn , std::map<int, std::string> & gs ) {
+    std::ifstream ifs(fn);
+    if( ! ifs.is_open() ){
+        std::cerr<<"failed to open file :"<<fn<<std::endl;
+        std::cerr<<"exit ... "<<std::endl;
+        exit(1);
+    }
+    std::cerr<<"loading data from "<<fn<<std::endl;
+    std::string line;
+    while( ! std::getline(ifs,line).eof() ){
+        int pos ; std::string name;
+        std::istringstream ist(line);
+        ist>>pos>>name;
+        gs[pos]=name;
+    }
+    ifs.close();
+    std::cerr<<"load "<<gs.size()<<" genes from "<<fn<<std::endl;
 }
 
-std::string gene_file;
-std::vector<std::pair<std::string, std::string> > aligns;
-std::vector<Query> querys;
-std::map<int,std::string> genes;
+/*******************************************************************************
+ *
+ * main function
+ *
+ *******************************************************************************/
 
 int main( int argc , char ** argv ) {
-    if( argc <6 || argc%2!=0 ){
+    if( argc <4 || argc%2!=0 ){
         PrintUsage();
         return 1;
     }
-    std::string graph_name = std::string(argv[1]);
-    int draw_len = std::atoi(argv[2]);
-    int ref_shift = std::atoi(argv[3]);
-    for( int i = 4; i < argc-1 ; i+=2 ) {
+    // caches
+    std::string gene_file;
+    std::vector<std::pair<std::string, std::string> > aligns;
+    std::vector<Query> querys;
+    std::map<int,std::string> genes;
+    // parse parameters
+    int draw_len = std::atoi(argv[1]);
+    for( int i = 2; i < argc-1 ; i+=2 ) {
         if( std::string(argv[i]) == "-i" ){
             std::string name;
             if( parse_align_file_name( std::string(argv[i+1]) ,name ) ){
                 aligns.push_back(std::make_pair(name,std::string(argv[i+1])));
-            } 
+            }
             else {
                 PrintUsage();
                 return 1;
@@ -404,33 +522,44 @@ int main( int argc , char ** argv ) {
             return 1;
         }
     }
-    int align_index  = 0;
+    // load files into caches
+    int align_num= 0;
     for( const auto & pair : aligns ){
-        align_index ++ ;
+        align_num ++ ;
         Query q ;
         q.query_name = pair.first ;
-        q.align_index = align_index ;
+        q.align_index = align_num;
         q.LoadAlignFile(pair.second);
         querys.push_back(q);
     }
     if( gene_file != "" ) {
-        LoadGenes(gene_file);
+        LoadGenes(gene_file,genes);
     }
-    //Draw :
-    SVG_Align::Init(align_index,!gene_file.empty() , draw_len);
+    //print SVG:
+    SVG_Align::Init(align_num, draw_len);
     SVG_Align::PrintHeader();
     SVG_Align::PrintBorder();
-    SVG_Align::PrintTitle(graph_name);
+    SVG_Align::PrintHeatBar();
 
     for( const auto & query : querys ) {
         if(query.align_index %2 == 1 ){
             SVG_Align::PrintRefLine(query.align_index);
-            SVG_Align::PrintGenePoint(genes,query.align_index);
+            if( gene_file != "" ) {
+                SVG_Align::PrintGenePoint(genes,query.align_index);
+            }
         }
         query.PrintQueryLine();
         query.PrintAlignRect();
+        if(query.align_index %2 == 1 ){
+            SVG_Align::PrintRefName(ref_name,query.align_index);
+        }
+        SVG_Align::PrintQueryName(query.query_name ,query.align_index);
     }
-    SVG_Align::PrintScale(ref_shift);
+    SVG_Align::PrintScale();
+    if( gene_file != "" ) {
+        SVG_Align::PrintGeneText(genes);
+    }
     SVG_Align::PrintFooter();
+    // done
     return 0;
 }
