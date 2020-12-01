@@ -85,6 +85,28 @@ struct Parallel_snp {
         }
         return std::make_pair(w,total);
     }
+    std::pair<int,int> switch_error() const {
+        int total = expect.size()-1;
+        total = 0;
+        int w = 0 ;
+        int prev_s = -1;
+        int curr_s = -1;
+        for( int i = 0 ;i< total ; i++ ){
+            if( expect.at(i).first == real.at(i).first &&  expect.at(i).second == real.at(i).second ) 
+                curr_s = 1;
+            else if ( expect.at(i).first == real.at(i).second &&  expect.at(i).second == real.at(i).first ) 
+                curr_s = 0 ;
+            else continue ;
+            if( prev_s == -1 ) prev_s = curr_s ;
+            if( prev_s != curr_s ) 
+                w += 1 ;
+            prev_s = curr_s ;
+            total ++ ;
+        }
+        return std::make_pair(w,total);
+    }
+
+
     void add_snp( const HapSNP & e ,  const HapSNP & r){
         expect.push_back(std::make_pair(e.alt1,e.alt2));
         real.push_back(std::make_pair(r.alt1,r.alt2));
@@ -145,16 +167,18 @@ int main(int argc , char ** argv){
         SNP_count ++;
         HapSNP temp;
         temp.InitFromString4(line);
-        //if( temp.alt1 != temp.alt2 ) {
+        if( temp.alt1 != temp.alt2 ) {
            candidates_snps[temp.ref][temp.pos] =temp;
            HAP_SNP ++ ;
-        //}
+        }
     }
     ift.close() ;
     std::cerr<<"load "<<SNP_count<<" from "<<target<<std::endl;
     std::cerr<<"load "<<HAP_SNP<<" in hap snp mode "<<target<<std::endl;
     int total_hit = 0;
     int total_wrong = 0 ;
+    int total_pair = 0 ;
+    int total_wrong_pair = 0 ;
     for( const auto & pair_block : true_phased_blocks ){
         const auto & block = pair_block.second ;
         auto snps = block.collect_candidates();
@@ -162,7 +186,11 @@ int main(int argc , char ** argv){
         auto scores = snps.not_match();
         total_hit += scores.second;
         total_wrong += scores.first;
+        auto scores1 = snps.switch_error() ;
+        total_pair += scores1.second ;
+        total_wrong_pair += scores1.first ;
     }
     std::cerr<<" total hit snps "<<total_hit<< " with wrong hit "<<total_wrong<<" score="<<float(total_wrong)/float(total_hit)<<std::endl;
+    std::cerr<<" total hit snps pair "<<total_pair<< " with wrong pair "<<total_wrong_pair<<" score="<<float(total_wrong_pair)/float(total_pair)<<std::endl;
     return 0 ;
 }
