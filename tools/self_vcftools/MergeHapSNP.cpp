@@ -238,26 +238,31 @@ bool isNewHAPSNP(const VI & vi) {
     if( chrs.find(vi.pos) ==  chrs.end()) return true ;
     return false ;
 }
-void AddNewHapSNP( const VI & vi , std::string N2) {
+void AddNewHapSNP( const VI & vi , std::string N2, bool H1) {
     all_hapsnps[vi.ref_name][vi.pos].ref_name = vi.ref_name;
     all_hapsnps[vi.ref_name][vi.pos].pos = vi.pos ;
-    all_hapsnps[vi.ref_name][vi.pos].alt1 = vi.alt1 ;
-    all_hapsnps[vi.ref_name][vi.pos].alt2 = N2 ;
+    if ( H1 ) {
+        all_hapsnps[vi.ref_name][vi.pos].alt1 = vi.alt1 ;
+        all_hapsnps[vi.ref_name][vi.pos].alt2 = N2 ;
+    } else {
+        all_hapsnps[vi.ref_name][vi.pos].alt2 = vi.alt1 ;
+        all_hapsnps[vi.ref_name][vi.pos].alt1 = N2 ;
+    }
 }
 
-void UpdateHapSNP( const VI & vi ,const std::map<std::string , std::map<int , VI>  > & another){
+void UpdateHapSNP( const VI & vi ,const std::map<std::string , std::map<int , VI>  > & another, bool H1){
     if( ! isNewHAPSNP(vi) ) return ; 
     if( another.find(vi.ref_name) == another.end() ) {
-        AddNewHapSNP(vi, vi.ref);
+        AddNewHapSNP(vi, vi.ref,H1);
         return ;
     }
     const auto & chrs =  another.at(vi.ref_name);
     if( chrs.find(vi.pos) == chrs.end() ) {
-        AddNewHapSNP(vi, vi.ref);
+        AddNewHapSNP(vi, vi.ref,H1);
         return ;
     }
     const auto avi = chrs.at(vi.pos);
-    AddNewHapSNP(vi,avi.alt1);
+    AddNewHapSNP(vi,avi.alt1,H1);
 }
 
 int main(int argc , char ** argv)
@@ -280,7 +285,7 @@ int main(int argc , char ** argv)
         const auto & chroms = chroms_pair.second;
         for( const auto & vi_pair : chroms ) {
             const auto & vi = vi_pair.second;
-            UpdateHapSNP(vi,H2);
+            UpdateHapSNP(vi,H2,true);
         }
     }
     // Check all SNP in H2
@@ -288,7 +293,7 @@ int main(int argc , char ** argv)
         const auto & chroms = chroms_pair.second;
         for( const auto & vi_pair : chroms ) {
             const auto & vi = vi_pair.second;
-            UpdateHapSNP(vi,H1);
+            UpdateHapSNP(vi,H1,false);
         }
     }
     // print final result
