@@ -73,6 +73,18 @@ struct Parallel_snp {
         return std::make_pair(w,total);
     }
 
+    std::pair<int,int> not_match() const {
+        int total = expect.size();
+        if( total == 0 ) return std::make_pair(0,0);
+        int w = 0 ;
+        for( int i = 0 ;i< total ; i++ ){
+            if( ( expect.at(i).first == real.at(i).first &&  expect.at(i).second == real.at(i).second ) 
+            || ( expect.at(i).first == real.at(i).second &&  expect.at(i).second == real.at(i).first ) )
+                continue ;
+            else w++;
+        }
+        return std::make_pair(w,total);
+    }
     void add_snp( const HapSNP & e ,  const HapSNP & r){
         expect.push_back(std::make_pair(e.alt1,e.alt2));
         real.push_back(std::make_pair(r.alt1,r.alt2));
@@ -128,20 +140,26 @@ int main(int argc , char ** argv){
     ifs.close();
     std::cerr<<"load "<<SNP_count<<" from "<<standard<<std::endl;
     SNP_count = 0;
+    int HAP_SNP = 0 ;
     while(!std::getline(ift,line).eof()){
         SNP_count ++;
         HapSNP temp;
         temp.InitFromString4(line);
-        candidates_snps[temp.ref][temp.pos] =temp;
+        //if( temp.alt1 != temp.alt2 ) {
+           candidates_snps[temp.ref][temp.pos] =temp;
+           HAP_SNP ++ ;
+        //}
     }
     ift.close() ;
     std::cerr<<"load "<<SNP_count<<" from "<<target<<std::endl;
+    std::cerr<<"load "<<HAP_SNP<<" in hap snp mode "<<target<<std::endl;
     int total_hit = 0;
     int total_wrong = 0 ;
     for( const auto & pair_block : true_phased_blocks ){
         const auto & block = pair_block.second ;
         auto snps = block.collect_candidates();
-        auto scores = snps.hamming_score();
+        //auto scores = snps.hamming_score();
+        auto scores = snps.not_match();
         total_hit += scores.second;
         total_wrong += scores.first;
     }

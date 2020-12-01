@@ -29,15 +29,13 @@ std::cerr<<"\n\
  Brief   : Filter all phased SNP from a VCF.\n\
 \n\
  Usage   : \n\
-   ./PhasedSNP   XXX.vcf  >phased_snp.txt\n\
+   ./PhasedSNP  XXX.vcf  >phased_snp.txt\n\
 \n\
  Output  :\n\
    CHROM\tPOS\tN1\tN2\tPS\n\
 \n\
-    N1 refer to ALT of haplotype1.\n\
-    N2 refer to ALT of haplotype2.\n\
-    PS is homo for GT in 1/1 and 1|1.\n\
-    PS is random_$id for GT in 0/1 or 1/0 or 1/2 or 2/1.\n\
+    N1 refer to ALT of haplotype1\n\
+    N2 refer to ALT of haplotype2\n\
 \n\
 ";
 }
@@ -73,9 +71,11 @@ enum V_HType{
     type_0_1 = 0 ,
     type_1_1 = 1 ,
     type_1_2 = 2 ,
+    type_0_0 = 3 ,
 };
 
 std::string V_HType_ToStr(V_HType t){
+    if(t==V_HType::type_0_0) return "0_0";
     if(t==V_HType::type_0_1) return "0_1";
     if(t==V_HType::type_1_1) return "1_1";
     if(t==V_HType::type_1_2) return "1_2";
@@ -101,17 +101,15 @@ std::string V_Type_ToStr(V_Type t){
 struct VI {
     std::string ref_name;
     int pos ;
-    std::string filter;
     std::string ref;
     std::string alt;
     std::set<std::string> seqs;
-    std::string  gt_str;
-    std::string  phased_id;
+    std::string gt_str;
+    std::string phased_id;
     std::string alt1;
     std::string alt2;
     V_HType htype;
     V_Type type ;
-    bool valid() const { return filter == "PASS" || filter == "." ; }
     // Func1
     void InitFromVCF( const std::string & line){
         auto items = split(line,'\t');
@@ -123,8 +121,6 @@ struct VI {
         for( auto x : v_alts ){
             seqs.insert(x);
         }
-        filter= items[6];
-        if( ! valid() ) return ;
         int GT_index=-1; int PS_index=-1;
         auto describe = split(items[8],':');
         for( int i = 0 ; i < describe.size() ; i++ ){
@@ -135,9 +131,7 @@ struct VI {
         if( GT_index >= 0 )
         {
             gt_str = datas[GT_index];
-            for( int i = 0 ; i < gt_str.size() ; i++ ) {
-                if( gt_str[i] == '.' ) gt_str[i] = '0' ;
-            }
+            for( int i = 0 ; i<gt_str.size() 
             if( gt_str  == "0|1" || gt_str== "0/1" ||  gt_str  == "1|0" ||  gt_str == "1/0" ) {
                 htype =V_HType::type_0_1;
             }
@@ -220,11 +214,7 @@ int main(int argc , char ** argv)
     int SNP_count = 0 ;
     int solidSNP = 0;
     int InDel_count = 0 ;
-    int SV_count = 0;
-    int phased_count = 0 ;
-    int unphased_count = 0 ;
-    int homo_count=0;
-    int invalid_count = 0;
+    int SV_count = 0 ;
     std::ifstream ifF1(F1_VCF);
     if(!ifF1.is_open()) {
         std::cerr<<"open file "<<F1_VCF<<" failed !! exit ..."<<std::endl;
@@ -236,31 +226,23 @@ int main(int argc , char ** argv)
         VI  temp;
         temp.InitFromVCF(line);
         variant_count ++ ;
-        if( ! temp.valid() ) { invalid_count ++ ; continue ;}
+        if(temp.type == V_Type::isSNP) SNP_count++;
         if(temp.type == V_Type::isInDel) InDel_count++;
         if(temp.type == V_Type::isSV) SV_count++;
         if( temp.type != V_Type::isSNP ) continue ;
-        SNP_count++;
-        if( temp.htype == V_HType::type_1_1 ) {
-            //std::cout<<temp.ref_name<<'\t'<<temp.pos<<'\t'<<temp.alt1<<'\t'<<temp.alt2<<'\t'<<"homo"<<'\n';
-            homo_count ++ ;
-        }
-        else if( temp.gt_str == "0/1" || temp.gt_str == "1/0" ||  temp.gt_str == "2/1" || temp.gt_str == "1/2" ){
-            //std::string rand_pid = std::string("random_")+std::to_string(rand_id++);
-            //std::cout<<temp.ref_name<<'\t'<<temp.pos<<'\t'<<temp.alt1<<'\t'<<temp.alt2<<'\t'<<rand_pid<<'\n';
-            unphased_count ++ ;
+        if( temp.htype == V_HType::type_1_1 ) continue ;
+        solidSNP ++;
+        if( temp.gt_str == "0/1" || temp.gt_str == "1/0" ||  temp.gt_str == "2/1" || temp.gt_str == "1/2" ){
+            std::string rand_pid = std::string("random_")+std::to_string(rand_id++);
+            std::cout<<temp.ref_name<<'\t'<<temp.pos<<'\t'<<temp.alt1<<'\t'<<temp.alt2<<'\t'<<rand_pid<<'\n';
         } else {
-            phased_count ++ ;
             std::cout<<temp.ref_name<<'\t'<<temp.pos<<'\t'<<temp.alt1<<'\t'<<temp.alt2<<'\t'<<temp.phased_id<<'\n';
         }
     }
-    std::cerr<<"Loaded   total\t"<<variant_count<<" variants from"<<F1_VCF<<std::endl;
-    std::cerr<<"         SNPs\t"<<SNP_count<<std::endl;
-    std::cerr<<"   homo     SNPs\t"<<homo_count<<std::endl;
-    std::cerr<<"   unphased SNPs\t"<<unphased_count<<std::endl;
-    std::cerr<<"   phased   SNPs\t"<<phased_count<<std::endl;
-    std::cerr<<"         InDels\t"<<InDel_count<<std::endl;
-    std::cerr<<"         SVs\t"<<SV_count<<std::endl<<std::endl;
-    std::cerr<<"         Filter\t"<<invalid_count<<std::endl<<std::endl;
+    std::cerr<<"Loaded total\t"<<variant_count<<" variants from"<<F1_VCF<<std::endl;
+    std::cerr<<"       SNPs\t"<<SNP_count<<std::endl;
+    std::cerr<<"phased SNPs\t"<<solidSNP<<std::endl;
+    std::cerr<<"       InDels\t"<<InDel_count<<std::endl;
+    std::cerr<<"       SVs\t"<<SV_count<<std::endl<<std::endl;
     std::cerr<<"All done"<<std::endl;
 }
