@@ -86,12 +86,11 @@ struct Parallel_snp {
         return std::make_pair(w,total);
     }
     std::pair<int,int> switch_error() const {
-        int total = expect.size()-1;
-        total = 0;
+        int total = 0;
         int w = 0 ;
         int prev_s = -1;
         int curr_s = -1;
-        for( int i = 0 ;i< total ; i++ ){
+        for( int i = 0 ;i< (int)expect.size() ; i++ ){
             if( expect.at(i).first == real.at(i).first &&  expect.at(i).second == real.at(i).second ) 
                 curr_s = 1;
             else if ( expect.at(i).first == real.at(i).second &&  expect.at(i).second == real.at(i).first ) 
@@ -168,10 +167,10 @@ int main(int argc , char ** argv){
         SNP_count ++;
         HapSNP temp;
         temp.InitFromString4(line);
-        if( temp.alt1 != temp.alt2 ) {
+        //if( temp.alt1 != temp.alt2 ) {
            candidates_snps[temp.ref][temp.pos] =temp;
            HAP_SNP ++ ;
-        }
+        //}
     }
     ift.close() ;
     std::cerr<<"load "<<SNP_count<<" from "<<target<<std::endl;
