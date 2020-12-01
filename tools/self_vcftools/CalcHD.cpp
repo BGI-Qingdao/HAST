@@ -115,6 +115,7 @@ struct Parallel_snp {
 
 std::map<std::string , std::map<int , HapSNP> > candidates_snps;
 struct PhaseBlock {
+
     std::map<int , HapSNP> snps;
 
     int size() const { return snps.size() ;}
@@ -135,7 +136,7 @@ struct PhaseBlock {
     }
 };
 
-std::map<std::string , PhaseBlock> true_phased_blocks;
+std::map<std::string ,std::map<std::string, PhaseBlock> > true_phased_blocks;
 
 int main(int argc , char ** argv){
     if(argc != 3 ) {
@@ -157,7 +158,7 @@ int main(int argc , char ** argv){
         SNP_count ++;
         HapSNP temp;
         temp.InitFromString5(line);
-        (true_phased_blocks[temp.phase_id].snps)[temp.pos] = temp;
+        (true_phased_blocks[temp.ref][temp.phase_id].snps)[temp.pos] = temp;
     }
     ifs.close();
     std::cerr<<"load "<<SNP_count<<" from "<<standard<<std::endl;
@@ -179,16 +180,18 @@ int main(int argc , char ** argv){
     int total_wrong = 0 ;
     int total_pair = 0 ;
     int total_wrong_pair = 0 ;
-    for( const auto & pair_block : true_phased_blocks ){
-        const auto & block = pair_block.second ;
-        auto snps = block.collect_candidates();
-        //auto scores = snps.hamming_score();
-        auto scores = snps.not_match();
-        total_hit += scores.second;
-        total_wrong += scores.first;
-        auto scores1 = snps.switch_error() ;
-        total_pair += scores1.second ;
-        total_wrong_pair += scores1.first ;
+    for( const auto & a_ref_pair : true_phased_blocks ) {
+        for( const auto & pair_block : a_ref_pair.second){
+            const auto & block = pair_block.second ;
+            auto snps = block.collect_candidates();
+            //auto scores = snps.hamming_score();
+            auto scores = snps.not_match();
+            total_hit += scores.second;
+            total_wrong += scores.first;
+            auto scores1 = snps.switch_error() ;
+            total_pair += scores1.second ;
+            total_wrong_pair += scores1.first ;
+        }
     }
     std::cerr<<" total hit snps "<<total_hit<< " with wrong hit "<<total_wrong<<" score="<<float(total_wrong)/float(total_hit)<<std::endl;
     std::cerr<<" total hit snps pair "<<total_pair<< " with wrong pair "<<total_wrong_pair<<" score="<<float(total_wrong_pair)/float(total_pair)<<std::endl;
