@@ -128,12 +128,12 @@ struct SVG_Align {
     }
 
     //static void PrintTitle(const std::string & title){
-    //    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="165" y="14">)"<<title<<R"(</text>)"<<'\n';
+    //    std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="165" y="14">)"<<title<<R"(</text>)"<<'\n';
     //}
 
     static void PrintRefName(const std::string & name, int align_index){
         int y = y_in_ref(align_index) - 6;
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
     }
     static void PrintQueryName(const std::string & name, int align_index){
         int y = y_in_query(align_index);
@@ -141,12 +141,12 @@ struct SVG_Align {
             y += 15;
         else 
             y -= 6 ;
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
     }
 
     static void PrintScale(){
         int y = y_scale();
-        std::cout<<R"(<line fill="black" stroke="black" stroke-width="1" x1="30" x2="870" y1=")"<<y<<R"(" y2=")"<<y<<R"(" />)"<<'\n';
+        std::cout<<R"(<line fill="black" stroke="black" stroke-width="1" x1="30" x2="900" y1=")"<<y<<R"(" y2=")"<<y<<R"(" />)"<<'\n';
         for(int pos =0 ; pos <=scale_len; pos += scale_step){
             int x=x_pos(pos);
             int y1 ;
@@ -159,9 +159,9 @@ struct SVG_Align {
             if( pos % scale_lable_step == 0 ) {
                 int xx = pos / scale_lable_step;
                 if( xx == 0 ) 
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<R"( </text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<R"( </text>)"<<'\n';
                 else
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<" "<<scale_label<<R"( </text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<scale_label<<R"( </text>)"<<'\n';
             }
         }
     }
@@ -175,18 +175,18 @@ struct SVG_Align {
             if( pair.second.size() <3 ){
                 if( index %2 ==1 ){
                     int y1 =y+13 ;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
                 } else {
                     int y1 =y-5;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
                 }
             } else {
                 if( index %2 ==1 ){
                     int y1 =y+8 ;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
                 } else {
                     int y1 =y-5;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(-60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(-60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
                 }
             }
         }
@@ -262,9 +262,9 @@ struct SVG_Align {
             std::cout<<R"(<rect width=")"<<15<<R"(" height=")"<<15<<R"(" x=")"<<x<<R"(" y=")"<<y<<R"(" )";
             std::cout<<R"(style="fill:)"<<color<<R"(;stroke:)"<<color<<R"(;stroke-width:1;" />)"<<'\n';
         }
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="100" y=")"<<45<<R"(">)"<<"0%"<<R"(</text>)"<<'\n';
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="250" y=")"<<45<<R"(">)"<<"10%"<<R"(</text>)"<<'\n';
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="275" y=")"<<25<<R"(">)"<<"Est.difference"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="100" y=")"<<45<<R"(">)"<<"0%"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="250" y=")"<<45<<R"(">)"<<"10%"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="275" y=")"<<25<<R"(">)"<<"Est.difference"<<R"(</text>)"<<'\n';
     }
 };
 

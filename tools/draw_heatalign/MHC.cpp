@@ -49,7 +49,7 @@ void PrintUsage(){
     std::cerr<<"    xxx.align.txt"<<std::endl;
     std::cerr<<"        filename must follow xxx.align.txt pattern and xxx will print in graph as query name. "<<std::endl;
     std::cerr<<"        content folllow below format :"<<std::endl;
-    std::cerr<<"        REF\tREF_START\tREF_END\tQUERY\tQUERY_START\tQUERY_END\tDIFF"<<std::endl;
+    std::cerr<<"        REF\tREF_START\tREF_END\tQUERY\tQUERY_START\tQUERY_END\t+/-/N\tDIFF"<<std::endl;
     std::cerr<<"        each line represent a alignment block and blocks from 1 query sequence must stay adjacent."<<std::endl;
     std::cerr<<"    genes.txt"<<std::endl;
     std::cerr<<"        filename has no limit but contents need folllow below format :"<<std::endl;
@@ -127,12 +127,12 @@ struct SVG_Align {
     }
 
     //static void PrintTitle(const std::string & title){
-    //    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="165" y="14">)"<<title<<R"(</text>)"<<'\n';
+    //    std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="165" y="14">)"<<title<<R"(</text>)"<<'\n';
     //}
 
     static void PrintRefName(const std::string & name, int align_index){
         int y = y_in_ref(align_index) - 6;
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
     }
     static void PrintQueryName(const std::string & name, int align_index){
         int y = y_in_query(align_index);
@@ -140,7 +140,7 @@ struct SVG_Align {
             y += 15;
         else 
             y -= 6 ;
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="70" y=")"<<y<<R"(">)"<<name<<R"(</text>)"<<'\n';
     }
 
     static void PrintScale(){
@@ -157,7 +157,7 @@ struct SVG_Align {
             std::cout<<R"(<line fill="black" stroke="black" stroke-width="1" x1=")"<<x<<R"(" x2=")"<<x<<R"(" y1=")"<<y<<R"(" y2=")"<<y1<<R"(" />)"<<'\n';
             if( pos % scale_lable_step == 0 ) {
                 int xx = pos / scale_lable_step;
-                std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<R"( Mb </text>)"<<'\n';
+                std::cout<<R"(<text font-family="Arial" font-size="0.7em" x=")"<<x-10<<R"(" y=")"<<y+15<<R"(">)"<<xx<<R"( Mb </text>)"<<'\n';
             }
         }
     }
@@ -169,20 +169,20 @@ struct SVG_Align {
             index ++ ;
             int x = x_pos(pair.first);
             if( pair.second.size() <3 ){
-                if( index %2 ==1 ){
+                if( index %2 ==1 ) {
                     int y1 =y+13 ;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
                 } else {
                     int y1 =y-5;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" >)"<<pair.second<<R"(</text>)"<<'\n';
                 }
             } else {
-                if( index %2 ==1 ){
+                if( index %2 ==1 ) {
                     int y1 =y+8 ;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
                 } else {
                     int y1 =y-5;
-                    std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(-60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
+                    std::cout<<R"(<text font-family="Arial" font-size="0.5em" x=")"<<x<<R"(" y=")"<<y1<<R"(" fill="black" transform="rotate(-60,)"<<x<<','<<y1<<")\">"<<pair.second<<R"(</text>)"<<'\n';
                 }
             }
         }
@@ -258,9 +258,9 @@ struct SVG_Align {
             std::cout<<R"(<rect width=")"<<15<<R"(" height=")"<<15<<R"(" x=")"<<x<<R"(" y=")"<<y<<R"(" )";
             std::cout<<R"(style="fill:)"<<color<<R"(;stroke:)"<<color<<R"(;stroke-width:1;" />)"<<'\n';
         }
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="100" y=")"<<45<<R"(">)"<<"0%"<<R"(</text>)"<<'\n';
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="250" y=")"<<45<<R"(">)"<<"10%"<<R"(</text>)"<<'\n';
-        std::cout<<R"(<text font-family="TimeNewRoman" font-size="0.7em" x="275" y=")"<<25<<R"(">)"<<"Est.difference"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="100" y=")"<<45<<R"(">)"<<"0%"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="250" y=")"<<45<<R"(">)"<<"10%"<<R"(</text>)"<<'\n';
+        std::cout<<R"(<text font-family="Arial" font-size="0.7em" x="275" y=")"<<25<<R"(">)"<<"Est.difference"<<R"(</text>)"<<'\n';
     }
 };
 
@@ -334,79 +334,82 @@ struct QuerySeq {
                  ,query_pos_min(-1)
                  ,query_pos_max(-1)
         ,ref_pos_min(-1)
-                 ,ref_pos_max(-1){}
+                 ,ref_pos_max(-1)
+    {
+    }
 
-        int seq_len() const {
-            return query_pos_max - query_pos_min + 1;
-        }
-        int line_start() const {
-            return query_shift ;
-        }
-        int line_end() const {
-            return query_shift + seq_len();
-        }
-        // Input pos : pos in query seq. 1 base
-        // Output    : pos in draw line. 0 base
-        float pos_in_line( int pos ) const {
-            if( orient )
-                return (pos - query_pos_min + query_shift);
-            else 
-                return (query_shift + query_pos_max - pos );
-        }
+    int seq_len() const {
+        return query_pos_max - query_pos_min + 1;
+    }
+    int line_start() const {
+        return query_shift ;
+    }
+    int line_end() const {
+        return query_shift + seq_len();
+    }
+    // Input pos : pos in query seq. 1 base
+    // Output    : pos in draw line. 0 base
+    float pos_in_line( int pos ) const {
+        if( orient )
+            return (pos - query_pos_min + query_shift);
+        else 
+            return (query_shift + query_pos_max - pos );
+    }
 
-        std::vector<AlignBlock> blocks;
+    std::vector<AlignBlock> blocks;
 
-        void SetShift(int prev_line_end) {
-            assert(blocks.size() > 0);
-            for( const auto & b : blocks ) {
-                update_min(query_pos_min, b.query_end);
-                update_min(query_pos_min, b.query_start);
-                update_max(query_pos_max, b.query_start);
-                update_max(query_pos_max, b.query_end);
+    void SetShift(int prev_line_end) {
+        assert(blocks.size() > 0);
+        for( const auto & b : blocks ) {
+            update_min(query_pos_min, b.query_end);
+            update_min(query_pos_min, b.query_start);
+            update_max(query_pos_max, b.query_start);
+            update_max(query_pos_max, b.query_end);
 
-                update_min(ref_pos_min, b.ref_end);
-                update_min(ref_pos_min, b.ref_start);
-                update_max(ref_pos_max, b.ref_start);
-                update_max(ref_pos_max, b.ref_end);
-            }
-            if( prev_line_end < ref_pos_min ) 
-                query_shift= ref_pos_min;
-            else 
-                query_shift =  prev_line_end;
-            std::cerr<<"    --> load query "<<seq_name<<" with "<<blocks.size()<<" blocks in "<<seq_len()<<" bps."<<std::endl;
+            update_min(ref_pos_min, b.ref_end);
+            update_min(ref_pos_min, b.ref_start);
+            update_max(ref_pos_max, b.ref_start);
+            update_max(ref_pos_max, b.ref_end);
         }
+        if( prev_line_end < ref_pos_min ) 
+            query_shift= ref_pos_min;
+        else 
+            query_shift =  prev_line_end;
+        std::cerr<<"    --> load query "<<seq_name<<" with "<<blocks.size()<<" blocks in "<<seq_len()<<" bps."<<std::endl;
+    }
 
-        void AddBlock(const AlignBlock & b) {
-            blocks.push_back(b);
-        }
+    void AddBlock(const AlignBlock & b) {
+        blocks.push_back(b);
+    }
 
-        void PrintAlignRect(int align_index) const {
-            for(const auto & block : blocks) {
-                SVG_Align::PrintMapRect(block.ref_start,block.ref_end,
-                        pos_in_line(block.query_start) ,
-                        pos_in_line(block.query_end) ,
-                        align_index,
-                        block.idy);
-            }
-            //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_max),align_index);
-            //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_min),align_index);
+    void PrintAlignRect(int align_index) const {
+        for(const auto & block : blocks) {
+            SVG_Align::PrintMapRect(block.ref_start,block.ref_end,
+                    pos_in_line(block.query_start) ,
+                    pos_in_line(block.query_end) ,
+                    align_index,
+                    block.idy);
         }
-        bool orient;
-        void DetectOrient() {
-            int t = 0 , f = 0 ;
-            for(const auto & block : blocks) {
-                if(block.orient) t+=block.maped_len();
-                else f+=block.maped_len();
-            }
-            if( t > f ) orient = true ;
-            else orient = false ;
+        //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_max),align_index);
+        //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_min),align_index);
+    }
+    bool orient;
+    void DetectOrient() {
+        int t = 0 , f = 0 ;
+        for(const auto & block : blocks) {
+            if(block.orient) t+=block.maped_len();
+            else f+=block.maped_len();
         }
-    };
+        if( t > f ) orient = true ;
+        else orient = false ;
+    }
+};
 
 struct Query {
     std::string query_name ;
     int align_index;
     std::vector<QuerySeq> seqs;
+    std::vector<bool> n_flags;
     void FlushLastSeq(){
         if( seqs.size() == 1) {
             seqs.at(0).SetShift(0);
