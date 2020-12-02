@@ -50,7 +50,7 @@ void PrintUsage(){
     std::cerr<<"    xxx.align.txt"<<std::endl;
     std::cerr<<"        filename must follow xxx.align.txt pattern and xxx will print in graph as query name. "<<std::endl;
     std::cerr<<"        content folllow below format :"<<std::endl;
-    std::cerr<<"        REF\tREF_START\tREF_END\tQUERY\tQUERY_START\tQUERY_END\tDIFF"<<std::endl;
+    std::cerr<<"        REF\tREF_START\tREF_END\tQUERY\tQUERY_START\tQUERY_END\t+/-/N\tDIFF"<<std::endl;
     std::cerr<<"        each line represent a alignment block and blocks from 1 query sequence must stay adjacent."<<std::endl;
     std::cerr<<"    genes.txt"<<std::endl;
     std::cerr<<"        filename has no limit but contents need folllow below format :"<<std::endl;
@@ -225,6 +225,15 @@ struct SVG_Align {
         std::cout<<R"(<circle cx=")"<<x<<R"(" cy=")"<<y<<R"(" r="2" stroke="black" stroke-width="2" fill="black" />)"<<'\n';
     };
 
+    static void PrintQueryNLine(int start , int end, int align_index ,int color_index) {
+        int x1 = x_pos(start) ;int x2 = x_pos(end) ;
+        int y = y_in_query(align_index);
+        const std::string & color = query_color(align_index,color_index);
+        std::cout<<R"(<line fill=")"<<"none"<<R"(" stroke=")"<<color<<R"(" stroke-width="1")";
+        std::cout<<R"( x1=")"<<x1<<R"(" x2=")"<<x2<<R"(" y1=")"<<y+1<<R"(" y2=")"<<y+1<<R"(" />)"<<'\n';
+        std::cout<<R"(<line fill=")"<<"none"<<R"(" stroke=")"<<color<<R"(" stroke-width="1")";
+        std::cout<<R"( x1=")"<<x1<<R"(" x2=")"<<x2<<R"(" y1=")"<<y-1<<R"(" y2=")"<<y-1<<R"(" />)"<<'\n';
+    }
     static void PrintQueryLine(int start , int end, int align_index ,int color_index) {
         int x1 = x_pos(start) ;int x2 = x_pos(end) ;
         int y = y_in_query(align_index);
@@ -286,11 +295,17 @@ struct AlignBlock {
     int query_end;
     float idy;
     bool orient;
+    bool isNBlock;
     int maped_len() const {
-        return ref_end - ref_start + 1 ;
+        if( ! isNBlock )
+            return ref_end - ref_start + 1 ;
+        else {
+            return 0;
+        }
     }
     void InitFromString(const std::string & line){
         m_line=line;
+        isNBlock=false ;
         int det=0;
         for(char c:line) if(c=='\t')det++;
         if(det<6) {
@@ -311,10 +326,14 @@ struct AlignBlock {
             if(o == '+' ) {
                 orient = true ;
             } 
-            else {
+            else if( o == '-' ) {
                 orient = false ;
                 if( query_start < query_end )
                     std::swap(query_start,query_end);
+            } else if ( o == 'N'|| o =='n' ) {
+                isNBlock = true ;
+            } else {
+                assert(0);
             }
         }
     }
@@ -334,78 +353,95 @@ struct QuerySeq {
     int ref_pos_min;
     int ref_pos_max;
     std::string seq_name;
+    bool valid_n_zone ;
     QuerySeq() : query_shift(0)
                  ,query_pos_min(-1)
                  ,query_pos_max(-1)
         ,ref_pos_min(-1)
-                 ,ref_pos_max(-1){}
+                 ,ref_pos_max(-1)
+    {
+    }
 
-        int seq_len() const {
+    int seq_len() const {
+        if ( ! isNSeq() )
             return query_pos_max - query_pos_min + 1;
+        else {
+            if( ref_pos_max >= query_shift +1000 )
+                return ref_pos_max - query_shift + 1;
+            else
+                return 1000 ; // minsize of N zoo to avoid missing it.
         }
-        int line_start() const {
-            return query_shift ;
-        }
-        int line_end() const {
-            return query_shift + seq_len();
-        }
-        // Input pos : pos in query seq. 1 base
-        // Output    : pos in draw line. 0 base
-        float pos_in_line( int pos ) const {
-            if( orient )
-                return (pos - query_pos_min + query_shift);
-            else 
-                return (query_shift + query_pos_max - pos );
-        }
+    }
+    int line_start() const {
+        return query_shift ;
+    }
+    int line_end() const {
+        return query_shift + seq_len();
+    }
+    // Input pos : pos in query seq. 1 base
+    // Output    : pos in draw line. 0 base
+    float pos_in_line( int pos ) const {
+        if( orient )
+            return (pos - query_pos_min + query_shift);
+        else 
+            return (query_shift + query_pos_max - pos );
+    }
+    bool isNSeq() const {
+        return blocks.size() == 1 && blocks.at(0).isNBlock ;
+    }
+    std::vector<AlignBlock> blocks;
 
-        std::vector<AlignBlock> blocks;
+    void SetShift(int prev_line_end) {
+        assert(blocks.size() > 0);
+        for ( const auto & b : blocks ) {
+            update_min(query_pos_min, b.query_end);
+            update_min(query_pos_min, b.query_start);
+            update_max(query_pos_max, b.query_start);
+            update_max(query_pos_max, b.query_end);
 
-        void SetShift(int prev_line_end) {
-            assert(blocks.size() > 0);
-            for( const auto & b : blocks ) {
-                update_min(query_pos_min, b.query_end);
-                update_min(query_pos_min, b.query_start);
-                update_max(query_pos_max, b.query_start);
-                update_max(query_pos_max, b.query_end);
+            update_min(ref_pos_min, b.ref_end);
+            update_min(ref_pos_min, b.ref_start);
+            update_max(ref_pos_max, b.ref_start);
+            update_max(ref_pos_max, b.ref_end);
+        }
+        if( ! isNSeq() ) {
+            if ( prev_line_end < ref_pos_min )
+                query_shift = ref_pos_min;
+            else
+                query_shift = prev_line_end;
+            //std::cerr<<"    --> load query "<<seq_name<<" with "<<blocks.size()<<" blocks in "<<seq_len()<<" bps."<<std::endl;
+        } else {
+            query_shift = prev_line_end;
+        }
+    }
 
-                update_min(ref_pos_min, b.ref_end);
-                update_min(ref_pos_min, b.ref_start);
-                update_max(ref_pos_max, b.ref_start);
-                update_max(ref_pos_max, b.ref_end);
-            }
-            if( prev_line_end < ref_pos_min ) 
-                query_shift= ref_pos_min;
-            else 
-                query_shift =  prev_line_end;
-            std::cerr<<"    --> load query "<<seq_name<<" with "<<blocks.size()<<" blocks in "<<seq_len()<<" bps."<<std::endl;
-        }
+    void AddBlock(const AlignBlock & b) {
+        blocks.push_back(b);
+    }
 
-        void AddBlock(const AlignBlock & b) {
-            blocks.push_back(b);
+    void PrintAlignRect(int align_index) const {
+        if ( isNSeq() ) return ;
+        for(const auto & block : blocks) {
+            SVG_Align::PrintMapRect(block.ref_start,block.ref_end,
+                    pos_in_line(block.query_start) ,
+                    pos_in_line(block.query_end) ,
+                    align_index,
+                    block.idy);
         }
-
-        void PrintAlignRect(int align_index) const {
-            for(const auto & block : blocks) {
-                SVG_Align::PrintMapRect(block.ref_start,block.ref_end,
-                        pos_in_line(block.query_start) ,
-                        pos_in_line(block.query_end) ,
-                        align_index,
-                        block.idy);
-            }
-            //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_max),align_index);
-            //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_min),align_index);
+        //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_max),align_index);
+        //SVG_Align::PrintPointInQuery(pos_in_line(query_pos_min),align_index);
+    }
+    bool orient;
+    void DetectOrient() {
+        int t = 0 , f = 0 ;
+        for(const auto & block : blocks) {
+            if(block.orient) t+=block.maped_len();
+            else f+=block.maped_len();
         }
-        bool orient;
-        void DetectOrient() {
-            int t = 0 , f = 0 ;
-            for(const auto & block : blocks) {
-                if(block.orient) t+=block.maped_len();
-                else f+=block.maped_len();
-            }
-            if( t > f ) orient = true ;
-            else orient = false ;
-        }
-    };
+        if( t > f ) orient = true ;
+        else orient = false ;
+    }
+};
 
 struct Query {
     std::string query_name ;
@@ -417,6 +453,24 @@ struct Query {
         } else if ( seqs.size() >1 ) {
             int prev_line_end = seqs.at(seqs.size()-2).line_end();
             seqs.at(seqs.size()-1).SetShift(prev_line_end);
+        }
+    }
+    void ResetNSeq() {
+        for( int i = 0 ; i <(int)seqs.size() ; i++ ){
+            auto & seq = seqs.at(i);
+            if( ! seq.isNSeq() ) continue ;
+            assert( i>0 && i < (int)seqs.size()-1);
+            const auto & prev = seqs.at(i-1);
+            const auto & next = seqs.at(i+1);
+            if( prev.seq_name != next.seq_name ) {
+                seq.valid_n_zone = false ;
+                continue ;
+            }
+            seq.valid_n_zone = true ;
+            seq.query_shift = prev.line_end();
+            seq.ref_pos_max = next.query_shift ;
+            if( seq.ref_pos_max < seq.query_shift +1000 )
+                seq.ref_pos_max = seq.query_shift + 1000;
         }
     }
     void  LoadAlignFile(const std::string & filename) {
@@ -434,11 +488,12 @@ struct Query {
             AlignBlock block ;
             block.InitFromString(line);
             if(block.idy<min_idy || std::abs(block.ref_end) -std::abs(block.ref_start) < 2000) { low_idy++ ; continue ;}
-            if( curr_query_name == ""  || curr_query_name != block.query_name){
+            if( curr_query_name == ""  || curr_query_name != block.query_name || block.isNBlock ){
                 curr_query_name = block.query_name;
                 FlushLastSeq();
                 seqs.push_back(QuerySeq());
                 seqs.at(seqs.size()-1).seq_name = curr_query_name;
+                if( block.isNBlock ) curr_query_name = "" ;
             }
             assert(seqs.size()>0);
             seqs.at(seqs.size()-1).AddBlock(block);
@@ -446,6 +501,7 @@ struct Query {
         FlushLastSeq();
         for( auto & seq : seqs )
             seq.DetectOrient();
+        ResetNSeq();
         std::cerr<<"filter "<<low_idy<<" low idy maps by min_idy="<<min_idy<<std::endl;
         std::cerr<<"loading data end with "<<seqs.size()<<" query sequence(s)."<<std::endl;
         ifs.close();
@@ -453,7 +509,11 @@ struct Query {
     void PrintQueryLine() const {
         int color_index = 0 ;
         for(const auto & seq :seqs ){
-            SVG_Align::PrintQueryLine(seq.line_start() , seq.line_end() ,align_index,color_index);
+            if( ! seq.isNSeq() )
+                SVG_Align::PrintQueryLine(seq.line_start() , seq.line_end() ,align_index,color_index);
+            else if ( seq.seq_len() > 0 && seq.valid_n_zone ) {
+                SVG_Align::PrintQueryNLine(seq.line_start() , seq.line_end() ,align_index,color_index);
+            }
             color_index++;
         }
     }
