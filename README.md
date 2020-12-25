@@ -54,7 +54,7 @@ Example :
 
 * Each step folder contains individual README.
 
-# run HSAT for 10X Genomics Linked Reads 
+# run HAST for 10X Genomics Linked Reads 
 
 see https://github.com/BGI-Qingdao/HAST410XG
 
