@@ -24,11 +24,7 @@ Example :
 
             ./assemble_by_supernova.sh --supernova /home/software/supernova \
                 --read1 paternal.r1.fastq --read1 homo.r1.fastq \
-                --read2 paternal.r2.fastq --read2 homo.r2.fastq
-
-            ./assemble_by_supernova.sh --supernova /home/software/supernova \
-                --read1 paternal.r1.fastq --read1 homo.r1.fastq \
                 --read2 paternal.r2.fastq --read2 homo.r2.fastq \
-                --cpu 30 --memory 500
+                --thread 30 --memory 500
 
 ```
