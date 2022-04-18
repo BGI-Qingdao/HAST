@@ -20,19 +20,19 @@ Options :
 
         --paternal      paternal ngs reads in fasta or fastq format ;
                          * accept input file in gzip format, but the name should be ended by ".gz"
-                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes \" \" ;
 
         --maternal      maternal ngs reads in fasta or fastq format ;
                          * accept input file in gzip format, but the name should be ended by ".gz"
-                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes \" \" ;
         --read1         filial read1 of stLFR reads in fastq format ;
                          * accept input file in gzip format, but the name should be ended by ".gz"
-                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes \" \" ;
                          * file name should contain "r1" ;
 
         --read2         filial read2 of stLFR reads;
                          * accept input file in gzip format, but the name should be ended by ".gz"
-                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes (" ") ;
+                         * accept multiple files, but should be seperated by whitespace; and all the filenames are within one pair of double quotes \" \" ;
                          * file name should contain "r2" ;
 
         --supernova     installed supernova path;
