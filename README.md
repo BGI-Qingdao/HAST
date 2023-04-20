@@ -65,6 +65,7 @@ see https://github.com/BGI-Qingdao/HAST4TGS
 
 ## Citing HAST
 If you use HAST in your work, please cite:
+
 Mengyang Xu, Lidong Guo, Xiao Du, Lei Li, Brock A Peters, Li Deng, Ou Wang, Fang Chen, Jun Wang, Zhesheng Jiang, Jinglin Han, Ming Ni, Huanming Yang, Xun Xu, Xin Liu, Jie Huang, Guangyi Fan, Accurate haplotype-resolved assembly reveals the origin of structural variants for human trios, Bioinformatics, Volume 37, Issue 15, 1 August 2021, Pages 2095–2102, https://doi.org/10.1093/bioinformatics/btab068
 
 ____________________________
